@@ -23,4 +23,9 @@ class Counter extends Model
     {
         return $this->hasMany(Queue::class);
     }
+
+    public function activeQueue()
+    {
+        return $this->hasOne(Queue::class)->whereIn('status', ['called', 'serving']);
+    }
 }

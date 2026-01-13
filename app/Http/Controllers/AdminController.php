@@ -12,16 +12,22 @@ class AdminController extends Controller
 {
     public function index()
     {
+        $stats = [
+            'total' => Queue::count(),
+            'waiting' => Queue::where('status', 'waiting')->count(),
+            'served' => Queue::where('status', 'served')->count(),
+        ];
+        $services = Service::withCount(['queues as waiting_count' => function($query) {
+            $query->where('status', 'waiting');
+        }])->get();
+        $floors = Floor::all();
+        $counters = Counter::with(['floor', 'activeQueue.service'])->get();
+
         return Inertia::render('Admin/Dashboard', [
-            'stats' => [
-                'total' => Queue::count(),
-                'waiting' => Queue::where('status', 'waiting')->count(),
-                'served' => Queue::where('status', 'served')->count(),
-            ],
-            'services' => Service::withCount(['queues as waiting_count' => function($query) {
-                $query->where('status', 'waiting');
-            }])->get(),
-            'floors' => Floor::all()
+            'stats' => $stats,
+            'services' => $services,
+            'floors' => $floors,
+            'counters' => $counters
         ]);
     }
 
