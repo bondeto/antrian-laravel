@@ -14,11 +14,9 @@ class OperatorController extends Controller
 {
     public function index()
     {
-        // Simple selection of counter
-        // Ideally should track which counter the user is currently manning in session/db
-        $counters = Counter::all();
+        $floors = \App\Models\Floor::with('counters')->orderBy('level')->get();
         return Inertia::render('Operator/Dashboard', [
-            'counters' => $counters
+            'floors' => $floors
         ]);
     }
 
