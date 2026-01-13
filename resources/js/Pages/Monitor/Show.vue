@@ -97,7 +97,7 @@ onMounted(() => {
 
 <style scoped>
 .animate-marquee {
-    animation: marquee 45s linear infinite;
+    animation: marquee 70s linear infinite;
 }
 @keyframes marquee {
     0% { transform: translateX(100%); }
