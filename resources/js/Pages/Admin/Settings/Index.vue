@@ -16,6 +16,9 @@ const form = useForm({
     skip_handling: props.settings.skip_handling || 'hangus',
     monitor_header: props.settings.monitor_header || 'Pusat Antrian',
     monitor_subheader: props.settings.monitor_subheader || 'Lobby Utama',
+    // Ticket settings
+    ticket_mode: props.settings.ticket_mode || 'print',
+    enable_photo_capture: props.settings.enable_photo_capture || false,
 });
 
 const newImageUrl = ref('');
@@ -139,6 +142,66 @@ const submit = () => {
                     <option value="pindah_2">Lewati 2 Permohonan (Urutan Berikutnya + 2)</option>
                 </select>
                 <p class="text-[10px] text-slate-400 italic">Tentukan apa yang terjadi pada tiket saat operator menekan tombol "Skip".</p>
+            </div>
+
+            <!-- Ticket Mode Settings -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 shadow-sm space-y-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-100 p-2 rounded-xl">
+                        <span class="text-2xl">🎫</span>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-800 uppercase tracking-tight">Pengaturan Tiket</h3>
+                        <p class="text-xs text-slate-500">Konfigurasi mode pengambilan tiket antrian</p>
+                    </div>
+                </div>
+
+                <!-- Ticket Mode Selection -->
+                <div class="space-y-3">
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest">Mode Tiket</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="cursor-pointer group">
+                            <input type="radio" v-model="form.ticket_mode" value="print" class="hidden" />
+                            <div class="p-5 border-2 rounded-xl transition-all" :class="form.ticket_mode === 'print' ? 'border-indigo-600 bg-white shadow-lg' : 'border-slate-200 bg-white hover:border-slate-300'">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-2xl">🖨️</span>
+                                    <span class="font-bold text-slate-800">Cetak Tiket</span>
+                                </div>
+                                <p class="text-xs text-slate-500">Mode klasik dengan tiket kertas yang dicetak dari printer termal.</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" v-model="form.ticket_mode" value="paperless" class="hidden" />
+                            <div class="p-5 border-2 rounded-xl transition-all" :class="form.ticket_mode === 'paperless' ? 'border-indigo-600 bg-white shadow-lg' : 'border-slate-200 bg-white hover:border-slate-300'">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-2xl">📱</span>
+                                    <span class="font-bold text-slate-800">Paperless (Barcode)</span>
+                                </div>
+                                <p class="text-xs text-slate-500">Tampilkan QR/Barcode di layar yang bisa di-scan oleh pengunjung.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Photo Capture Toggle -->
+                <div class="bg-white p-5 rounded-xl border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl">📸</div>
+                            <div>
+                                <div class="font-bold text-slate-800">Foto Pengambil Tiket</div>
+                                <p class="text-xs text-slate-500">Ambil foto saat pengambilan tiket untuk verifikasi identitas</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" v-model="form.enable_photo_capture" class="sr-only peer">
+                            <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+                    <div v-if="form.enable_photo_capture" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 animate-fade-in">
+                        <strong>📁 Penyimpanan Foto:</strong> Foto akan disimpan di folder <code class="bg-amber-100 px-1 rounded">storage/queue-photos/YYYY/MM/DD/</code> untuk memudahkan maintenance dan pembersihan data lama.
+                    </div>
+                </div>
             </div>
 
             <div class="flex justify-end">

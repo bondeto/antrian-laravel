@@ -117,6 +117,20 @@ const formatDate = (date) => {
                         </div>
                         
                         <div v-if="currentQueue" class="animate-fade-in">
+                            <!-- Customer Photo (if available) -->
+                            <div v-if="currentQueue.photo_url" class="mb-6">
+                                <div class="inline-block relative">
+                                    <img 
+                                        :src="currentQueue.photo_url" 
+                                        alt="Foto Pengambil Tiket"
+                                        class="w-32 h-32 object-cover rounded-2xl ring-4 ring-blue-500/30 shadow-2xl"
+                                    />
+                                    <div class="absolute -bottom-2 -right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-lg">
+                                        📸 Foto Pengambil
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Service Badge -->
                             <div class="inline-block bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/30 text-blue-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">
                                 {{ currentQueue.service?.name }}
