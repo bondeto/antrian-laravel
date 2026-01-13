@@ -48,6 +48,19 @@ onMounted(() => {
                     setTimeout(() => {
                         showOverlay.value = false;
                     }, 10000);
+                })
+                .listen('QueueUpdated', (e) => {
+                    console.log('[Lobby] QueueUpdated event received:', e);
+                    const queue = e.queue;
+                    
+                    // If queue is served or skipped, remove from the list
+                    if (queue.status === 'served' || queue.status === 'skipped') {
+                        const index = serving.value.findIndex(q => q.id === queue.id);
+                        if (index !== -1) {
+                            serving.value.splice(index, 1);
+                            console.log('[Lobby] Removed queue from list:', queue.full_number);
+                        }
+                    }
                 });
         });
     } else {

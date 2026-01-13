@@ -45,6 +45,19 @@ onMounted(() => {
             setTimeout(() => {
                 lastCalled.value = null;
             }, 8000);
+        })
+        .listen('QueueUpdated', (e) => {
+            console.log('[Monitor/Show] QueueUpdated event received:', e);
+            const queue = e.queue;
+            
+            // If queue is served or skipped, remove from the list
+            if (queue.status === 'served' || queue.status === 'skipped') {
+                const index = serving.value.findIndex(q => q.id === queue.id);
+                if (index !== -1) {
+                    serving.value.splice(index, 1);
+                    console.log('[Monitor/Show] Removed queue from list:', queue.full_number);
+                }
+            }
         });
 });
 </script>

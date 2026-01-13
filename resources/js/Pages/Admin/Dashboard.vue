@@ -7,10 +7,12 @@ const props = defineProps({
     stats: Object,
     services: Array,
     floors: Array,
+    activeServing: Array, // New prop for currently serving queues
 });
 
 const stats = ref(props.stats);
 const services = ref(props.services);
+const activeServing = ref(props.activeServing || []);
 
 const reset = () => {
     if (confirm('PERINGATAN: Ini akan menghapus semua data antrian dan mereset nomor ke 0. Lanjutkan?')) {
@@ -31,12 +33,30 @@ onMounted(() => {
             if (!e.queue) return;
             stats.value.waiting--;
             const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
-            if (sIdx !== -1) services.value[sIdx].waiting_count--;
+            if (sIdx !== -1 && services.value[sIdx].waiting_count > 0) {
+                services.value[sIdx].waiting_count--;
+            }
+            
+            // Add to active serving list (remove if exists first)
+            const existIdx = activeServing.value.findIndex(q => q.id === e.queue.id);
+            if (existIdx !== -1) {
+                activeServing.value.splice(existIdx, 1);
+            }
+            activeServing.value.unshift(e.queue);
+            if (activeServing.value.length > 10) activeServing.value.pop();
         })
         .listen('QueueUpdated', (e) => {
             if (!e.queue) return;
             if (e.queue.status === 'served') {
                 stats.value.served++;
+            }
+            
+            // Remove from active serving if served or skipped
+            if (e.queue.status === 'served' || e.queue.status === 'skipped') {
+                const idx = activeServing.value.findIndex(q => q.id === e.queue.id);
+                if (idx !== -1) {
+                    activeServing.value.splice(idx, 1);
+                }
             }
         });
 });
@@ -72,6 +92,35 @@ onMounted(() => {
                 <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai</div>
                 <div class="text-4xl font-black text-green-600">{{ stats.served }}</div>
                 <div class="mt-4 text-xs text-green-400 font-bold">Total Terlayani</div>
+            </div>
+        </div>
+
+        <!-- Active Serving Monitor -->
+        <div class="mb-8">
+            <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Sedang Dilayani (Real-time)
+            </h3>
+            <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                <div v-if="activeServing.length > 0" class="divide-y divide-slate-100">
+                    <div v-for="q in activeServing" :key="q.id" class="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="text-2xl font-black text-blue-600 font-mono">{{ q.full_number }}</div>
+                            <div>
+                                <div class="text-xs text-slate-400 uppercase font-bold">{{ q.service?.name || 'Service' }}</div>
+                                <div class="text-sm text-slate-600">{{ q.floor?.name || 'Floor' }}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-slate-800">{{ q.counter?.name || '-' }}</div>
+                            <div class="text-xs text-green-500 uppercase font-bold">{{ q.status === 'called' ? 'Dipanggil' : 'Dilayani' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="p-8 text-center text-slate-400">
+                    <div class="text-4xl mb-2">☕</div>
+                    <div class="text-sm font-bold">Belum ada antrian yang sedang dilayani</div>
+                </div>
             </div>
         </div>
 

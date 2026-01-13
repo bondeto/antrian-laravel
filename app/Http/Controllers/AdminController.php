@@ -22,11 +22,19 @@ class AdminController extends Controller
             $query->where('status', 'waiting');
         }])->get();
         $floors = Floor::all();
+        
+        // Get currently serving queues
+        $activeServing = Queue::whereIn('status', ['called', 'serving'])
+            ->with(['counter', 'service', 'floor'])
+            ->orderByDesc('called_at')
+            ->take(10)
+            ->get();
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'services' => $services,
-            'floors' => $floors
+            'floors' => $floors,
+            'activeServing' => $activeServing
         ]);
     }
 
