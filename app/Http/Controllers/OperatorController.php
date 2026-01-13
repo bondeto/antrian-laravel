@@ -44,25 +44,16 @@ class OperatorController extends Controller
 
     public function callNext(Request $request, Counter $counter)
     {
-        // Logic to find next queue
-        // A counter might serve specific services (complex) or all floor services (simple).
-        // Let's assume counter serves all services on the floor for now, or based on simple matching
-        
         $queue = DB::transaction(function () use ($counter) {
             // Find oldest waiting queue for this floor 
-            // Better: prioritize by service if needed.
             $next = Queue::where('floor_id', $counter->floor_id)
                 ->where('status', 'waiting')
-                ->orderBy('id', 'asc') // FIFO
+                ->orderBy('created_at', 'asc') // Use created_at for flexible re-queueing
+                ->orderBy('id', 'asc')
                 ->lockForUpdate()
                 ->first();
 
             if ($next) {
-                // Determine if we should set previous active queue to served?
-                // Ideally operator clicks "Served" explicitly. 
-                // But if they click "Call Next" while one is active, we might auto-close or error.
-                // Let's assume they must finish previous one first.
-                
                 $next->update([
                     'status' => 'called',
                     'counter_id' => $counter->id,
@@ -105,8 +96,57 @@ class OperatorController extends Controller
 
     public function skip(Request $request, Queue $queue)
     {
-        $queue->update(['status' => 'skipped']);
+        $handler = \App\Models\Setting::get('skip_handling', 'hangus');
+
+        if ($handler === 'hangus') {
+            $queue->update(['status' => 'skipped']);
+        } else {
+            // Re-queue logic
+            $data = [
+                'status' => 'waiting',
+                'counter_id' => null,
+                'called_at' => null,
+            ];
+
+            if ($handler === 'belakang') {
+                $data['created_at'] = now();
+            } elseif ($handler === 'pindah_1') {
+                // Find the next person in line
+                $next = Queue::where('floor_id', $queue->floor_id)
+                    ->where('status', 'waiting')
+                    ->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->first();
+                
+                if ($next) {
+                    // Set created_at to be slightly after the next person
+                    $data['created_at'] = $next->created_at->addSecond();
+                } else {
+                    $data['created_at'] = now();
+                }
+            } elseif ($handler === 'pindah_2') {
+                // Find the second person in line
+                $waiters = Queue::where('floor_id', $queue->floor_id)
+                    ->where('status', 'waiting')
+                    ->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->limit(2)
+                    ->get();
+                
+                if ($waiters->count() >= 2) {
+                    $target = $waiters[1]; // The second person
+                    $data['created_at'] = $target->created_at->addSecond();
+                } elseif ($waiters->count() === 1) {
+                    $data['created_at'] = $waiters[0]->created_at->addSecond();
+                } else {
+                    $data['created_at'] = now();
+                }
+            }
+
+            $queue->update($data);
+        }
+
         broadcast(new \App\Events\QueueUpdated($queue->load(['floor', 'counter', 'service'])));
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Tiket ' . $queue->full_number . ' telah di-' . ($handler === 'hangus' ? 'skip' : 'antrekan kembali') . '.');
     }
 }
