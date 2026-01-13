@@ -75,7 +75,13 @@ class QueueController extends Controller
         return Inertia::render('Monitor/Show', [
             'floor' => $floor,
             'initialServing' => $serving,
-            'initialWaiting' => $waiting
+            'initialWaiting' => $waiting,
+            'mediaSettings' => [
+                'type' => \App\Models\Setting::get('media_type', 'youtube'),
+                'youtube_url' => \App\Models\Setting::get('youtube_url', ''),
+                'local_video_url' => \App\Models\Setting::get('local_video_url', ''),
+                'slideshow_urls' => \App\Models\Setting::get('slideshow_urls', []),
+            ]
         ]);
     }
 
@@ -90,7 +96,13 @@ class QueueController extends Controller
 
         return Inertia::render('Monitor/Lobby', [
             'floors' => $floors,
-            'initialServing' => $serving
+            'initialServing' => $serving,
+            'mediaSettings' => [
+                'type' => \App\Models\Setting::get('media_type', 'youtube'),
+                'youtube_url' => \App\Models\Setting::get('youtube_url', ''),
+                'local_video_url' => \App\Models\Setting::get('local_video_url', ''),
+                'slideshow_urls' => \App\Models\Setting::get('slideshow_urls', []),
+            ]
         ]);
     }
 }

@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class SettingController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Admin/Settings/Index', [
+            'settings' => [
+                'media_type' => Setting::get('media_type', 'youtube'), // youtube, local_video, slideshow
+                'youtube_url' => Setting::get('youtube_url', ''),
+                'slideshow_urls' => Setting::get('slideshow_urls', []), // array of urls
+                'local_video_url' => Setting::get('local_video_url', ''),
+            ]
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'media_type' => 'required|in:youtube,local_video,slideshow',
+            'youtube_url' => 'nullable|string',
+            'local_video_url' => 'nullable|string',
+            'slideshow_urls' => 'nullable|array',
+        ]);
+
+        Setting::set('media_type', $data['media_type']);
+        Setting::set('youtube_url', $data['youtube_url'] ?? '');
+        Setting::set('local_video_url', $data['local_video_url'] ?? '');
+        Setting::set('slideshow_urls', $data['slideshow_urls'] ?? [], 'json');
+
+        return redirect()->back()->with('success', 'Pengaturan media berhasil disimpan.');
+    }
+}

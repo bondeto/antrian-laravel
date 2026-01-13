@@ -12,6 +12,7 @@ const navItems = [
     { name: 'Lantai', href: '/admin/floors', icon: '🏢' },
     { name: 'Layanan', href: '/admin/services', icon: '🛠️' },
     { name: 'Loket', href: '/admin/counters', icon: '🖥️' },
+    { name: 'Pengaturan', href: '/admin/settings', icon: '⚙️' },
 ];
 </script>
 

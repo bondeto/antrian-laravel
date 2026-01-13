@@ -50,6 +50,10 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('floors', \App\Http\Controllers\Admin\FloorController::class);
         Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);
         Route::resource('counters', \App\Http\Controllers\Admin\CounterController::class);
+        
+        // Settings
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
     });
     
     // Actions on specific queue

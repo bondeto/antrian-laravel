@@ -1,11 +1,12 @@
-<script setup>
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import PromoMedia from '@/Components/PromoMedia.vue';
 
 const props = defineProps({
     floor: Object,
     initialServing: Array,
     initialWaiting: Array,
+    mediaSettings: Object,
 });
 
 const serving = ref(props.initialServing);
@@ -64,8 +65,7 @@ onMounted(() => {
         <main class="flex-1 flex overflow-hidden">
             <!-- Left: Video / Media -->
             <div class="w-2/3 bg-black relative flex items-center justify-center">
-                <!-- Placeholder for Video -->
-                <p class="text-gray-500">Video Promosi / Company Profile</p>
+                <PromoMedia :settings="mediaSettings" />
                 
                 <!-- Popup Overlay for Last Called -->
                 <div v-if="lastCalled" key="lastCalled.id" class="absolute inset-0 flex items-center justify-center bg-black/80 z-20 animate-pulse">
