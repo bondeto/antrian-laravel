@@ -68,14 +68,14 @@ return [
 
         'apps' => [
             [
-                'id' => env('REVERB_APP_ID'),
-                'key' => env('REVERB_APP_KEY'),
-                'secret' => env('REVERB_APP_SECRET'),
+                'id' => '804812',
+                'key' => 'jwfl3920s812',
+                'secret' => '12sd90a823',
                 'options' => [
-                    'host' => env('REVERB_HOST'),
-                    'port' => env('REVERB_PORT', 443),
-                    'scheme' => env('REVERB_SCHEME', 'https'),
-                    'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    'host' => '127.0.0.1',
+                    'port' => 8081,
+                    'scheme' => 'http',
+                    'useTLS' => false,
                 ],
                 'allowed_origins' => ['*'],
                 'ping_interval' => 60,
