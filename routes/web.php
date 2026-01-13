@@ -25,10 +25,14 @@ Route::post('/queue', [QueueController::class, 'store'])->name('queue.store');
 
 // MONITOR
 Route::get('/monitor/{floor_id}', [QueueController::class, 'monitor'])->name('monitor.show');
+Route::get('/lobby', [QueueController::class, 'lobby'])->name('monitor.lobby');
 
 // OPERATOR (Protected)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
+        if (auth()->user()->role === 'admin') {
+            return redirect('/admin/dashboard');
+        }
         return redirect('/operator');
     })->name('dashboard');
 
@@ -37,8 +41,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/operator/{counter}/call', [OperatorController::class, 'callNext'])->name('operator.call');
 
     // ADMIN
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-    Route::post('/admin/reset', [AdminController::class, 'reset'])->name('admin.reset');
+    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::post('/reset', [AdminController::class, 'reset'])->name('reset');
+        
+        // Management
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::resource('floors', \App\Http\Controllers\Admin\FloorController::class);
+        Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);
+        Route::resource('counters', \App\Http\Controllers\Admin\CounterController::class);
+    });
     
     // Actions on specific queue
     Route::post('/operator/queue/{queue}/recall', [OperatorController::class, 'recall'])->name('operator.recall');

@@ -59,7 +59,7 @@ class QueueController extends Controller
         
         // Initial state
         $serving = Queue::where('floor_id', $floor_id)
-            ->where('status', 'called') // or serving
+            ->whereIn('status', ['called', 'serving'])
             ->with(['counter', 'service'])
             ->orderByDesc('called_at')
             ->take(5)
@@ -76,6 +76,21 @@ class QueueController extends Controller
             'floor' => $floor,
             'initialServing' => $serving,
             'initialWaiting' => $waiting
+        ]);
+    }
+
+    public function lobby()
+    {
+        $floors = Floor::all();
+        $serving = Queue::whereIn('status', ['called', 'serving'])
+            ->with(['counter', 'service', 'floor'])
+            ->orderByDesc('called_at')
+            ->take(12)
+            ->get();
+
+        return Inertia::render('Monitor/Lobby', [
+            'floors' => $floors,
+            'initialServing' => $serving
         ]);
     }
 }

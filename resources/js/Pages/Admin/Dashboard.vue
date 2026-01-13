@@ -1,5 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
+import Layout from './Layout.vue';
 
 const props = defineProps({
     stats: Object,
@@ -7,63 +8,60 @@ const props = defineProps({
 });
 
 const reset = () => {
-    if (confirm('Apakah Anda yakin ingin me-reset semua antrian hari ini?')) {
+    if (confirm('PERINGATAN: Ini akan menghapus semua data antrian dan mereset nomor ke 0. Lanjutkan?')) {
         router.post('/admin/reset');
     }
 };
 </script>
 
 <template>
-    <Head title="Admin Dashboard" />
-    <div class="p-8 max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold">Admin Dashboard Antrian</h1>
-            <button @click="reset" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition">
-                Reset Antrian
+    <Layout>
+        <Head title="Admin Dashboard" />
+
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-black text-slate-800 uppercase tracking-tight">Dashboard Overview</h2>
+                <p class="text-slate-500">Statistik real-time sistem antrian seluruh lantai.</p>
+            </div>
+            <button @click="reset" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all">
+                RESET SYSTEM
             </button>
         </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
-                <div class="text-gray-500 uppercase text-xs font-bold">Total Antrian</div>
-                <div class="text-4xl font-bold">{{ stats.total }}</div>
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Antrian</div>
+                <div class="text-4xl font-black text-slate-800">{{ stats.total }}</div>
+                <div class="mt-4 text-xs text-green-500 font-bold">Hari Ini</div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-yellow-500">
-                <div class="text-gray-500 uppercase text-xs font-bold">Menunggu</div>
-                <div class="text-4xl font-bold">{{ stats.waiting }}</div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Menunggu</div>
+                <div class="text-4xl font-black text-blue-600">{{ stats.waiting }}</div>
+                <div class="mt-4 text-xs text-blue-400 font-bold">Waiting List</div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
-                <div class="text-gray-500 uppercase text-xs font-bold">Selesai</div>
-                <div class="text-4xl font-bold">{{ stats.served }}</div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai</div>
+                <div class="text-4xl font-black text-green-600">{{ stats.served }}</div>
+                <div class="mt-4 text-xs text-green-400 font-bold">Total Terlayani</div>
             </div>
         </div>
 
-        <!-- Services -->
-        <h2 class="text-2xl font-bold mb-4">Status per Layanan</h2>
-        <div class="bg-white rounded-xl shadow overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="p-4">Layanan</th>
-                        <th class="p-4">Kode</th>
-                        <th class="p-4">Terakhir</th>
-                        <th class="p-4">Menunggu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="s in services" :key="s.id" class="border-b last:border-0">
-                        <td class="p-4 font-semibold">{{ s.name }}</td>
-                        <td class="p-4">{{ s.code }}</td>
-                        <td class="p-4">{{ s.last_number }}</td>
-                        <td class="p-4">
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-bold">
-                                {{ s.waiting_count }}
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Services Status -->
+        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-4">Status Per Layanan</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="service in services" :key="service.id" 
+                class="bg-white p-5 rounded-xl border border-slate-100 flex justify-between items-center"
+            >
+                <div>
+                    <div class="text-xs font-black text-blue-600">{{ service.code }}</div>
+                    <div class="font-bold text-slate-700">{{ service.name }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-black text-slate-800">{{ service.waiting_count }}</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Waiting</div>
+                </div>
+            </div>
         </div>
-    </div>
+    </Layout>
 </template>

@@ -18,17 +18,15 @@ if %ERRORLEVEL% NEQ 0 (
 
 :: 2. Config Clear
 echo [2/5] Membersihkan Cache...
-php artisan config:clear
-php artisan cache:clear
+php artisan optimize:clear
 
 :: 3. Web Server
 echo [3/5] Menjalankan Server Utama (Port 8000)...
 start "Laravel Server (8000)" cmd /c "php artisan serve"
 
 :: 4. WebSocket Reverb
-echo [4/5] Menjalankan Server WebSocket (Port 8081)...
-:: Ditambahkan debug untuk melihat aktivitas
-start "Reverb WebSocket (8081)" cmd /c "php artisan reverb:start --port=8081 --debug"
+echo [4/5] Menjalankan Server WebSocket (Port 8080)...
+start "Reverb WebSocket (8080)" cmd /c "php artisan reverb:start --debug"
 
 :: 5. Frontend Assets dan Worker
 echo [5/5] Menjalankan Vite dan Worker...

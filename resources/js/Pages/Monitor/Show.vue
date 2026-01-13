@@ -43,6 +43,11 @@ onMounted(() => {
             const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${queue.counter?.name || 'Loket'}`;
             playChime();
             setTimeout(() => speak(text), 1000);
+
+            // Clear overlay after 8s
+            setTimeout(() => {
+                lastCalled.value = null;
+            }, 8000);
         });
 });
 </script>
