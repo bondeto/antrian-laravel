@@ -23,30 +23,30 @@ services:
         networks:
             - antrian-network
         depends_on:
-            - mysql
+            - pgsql
             - redis
 
-    mysql:
-        image: 'mysql/mysql-server:8.0'
+    pgsql:
+        image: 'postgres:15'
         ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
+            - '${FORWARD_DB_PORT:-5432}:5432'
         environment:
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_HOST: '%'
-            MYSQL_DATABASE: '${DB_DATABASE}'
-            MYSQL_USER: '${DB_USERNAME}'
-            MYSQL_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
         volumes:
-            - 'mysql-antrian:/var/lib/mysql'
+            - 'pgsql-antrian:/var/lib/postgresql/data'
         networks:
             - antrian-network
         healthcheck:
             test:
                 - CMD
-                - mysqladmin
-                - ping
-                - '-p${DB_PASSWORD}'
+                - pg_isready
+                - '-q'
+                - '-d'
+                - '${DB_DATABASE}'
+                - '-U'
+                - '${DB_USERNAME}'
             retries: 3
             timeout: 5s
 
@@ -71,7 +71,7 @@ networks:
         driver: bridge
 
 volumes:
-    mysql-antrian:
+    pgsql-antrian:
         driver: local
     redis-antrian:
         driver: local

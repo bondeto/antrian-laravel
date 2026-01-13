@@ -1,6 +1,6 @@
 # Sistem Antrian Pelayanan Kantor (3 Lantai)
 
-Sistem antrian realtime menggunakan Laravel Latest, Inertia Vue, dan Laravel Reverb (WebSocket).
+Sistem antrian realtime menggunakan Laravel Latest, Inertia Vue, dan Laravel Reverb (WebSocket). Database menggunakan PostgreSQL.
 
 ## Fitur
 - **Kiosk**: Ambil nomor antrian berdasarkan layanan per lantai.
@@ -35,7 +35,7 @@ Sistem antrian realtime menggunakan Laravel Latest, Inertia Vue, dan Laravel Rev
 
 4. **Jalankan Docker Containers**
    ```bash
-   # Ini akan menjalankan MySQL, Redis, dan Laravel Sail (App Container)
+   # Ini akan menjalankan PostgreSQL, Redis, dan Laravel Sail (App Container)
    docker-compose up -d
    ```
 
