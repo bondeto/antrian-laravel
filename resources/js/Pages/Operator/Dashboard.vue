@@ -13,6 +13,7 @@ const props = defineProps({
             <div class="text-center mb-12">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight uppercase">Pilih Loket Tugas</h1>
                 <p class="text-slate-500 mt-2">Silakan pilih loket yang akan Anda operasikan hari ini.</p>
+                <div class="text-[10px] text-slate-300 mt-1">Total Lantai: {{ floors.length }}</div>
                 <p v-if="!floors || floors.length === 0" class="text-red-500 font-bold mt-4 animate-bounce">
                     DEBUG: Data lantai/loket tidak ditemukan atau kosong.
                 </p>

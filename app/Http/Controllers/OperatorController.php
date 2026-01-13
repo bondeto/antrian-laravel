@@ -14,7 +14,12 @@ class OperatorController extends Controller
 {
     public function index()
     {
-        $floors = \App\Models\Floor::with('counters')->orderBy('level')->get();
+        $floors = \App\Models\Floor::with('counters')->orderBy('level')->get()->map(function ($floor) {
+            // Ensure counters is a sequential array for JS
+            $floor->setRelation('counters', $floor->counters->values());
+            return $floor;
+        });
+
         return Inertia::render('Operator/Dashboard', [
             'floors' => $floors
         ]);
