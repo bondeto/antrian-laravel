@@ -11,8 +11,9 @@ const player = ref(null);
 const playerReady = ref(false);
 
 const videoId = computed(() => {
-    let id = props.settings.youtube_url;
+    let id = props.settings?.youtube_url;
     if (!id) return '';
+    if (typeof id !== 'string') return '';
     if (id.includes('v=')) {
         id = id.split('v=')[1].split('&')[0];
     } else if (id.includes('youtu.be/')) {
@@ -78,6 +79,8 @@ const createPlayer = () => {
 };
 
 onMounted(() => {
+    if (!props.settings) return;
+    
     if (props.settings.type === 'youtube') {
         initYouTubeAPI();
     } else if (props.settings.type === 'slideshow') {
@@ -96,24 +99,24 @@ onUnmounted(() => {
 <template>
     <div class="w-full h-full relative overflow-hidden bg-black">
         <!-- YouTube with IFrame API -->
-        <div v-show="settings.type === 'youtube' && videoId" class="w-full h-full pointer-events-none">
+        <div v-if="settings?.type === 'youtube' && videoId" class="w-full h-full pointer-events-none">
             <div id="youtube-player"></div>
             <!-- Overlay to prevent interaction if needed -->
             <div class="absolute inset-0 z-10"></div>
         </div>
 
         <!-- Local Video -->
-        <video v-else-if="settings.type === 'local_video' && settings.local_video_url"
+        <video v-else-if="settings?.type === 'local_video' && settings?.local_video_url"
             class="w-full h-full object-cover"
             autoplay loop muted
         >
-            <source :src="settings.local_video_url" type="video/mp4">
+            <source :src="settings?.local_video_url" type="video/mp4">
         </video>
 
         <!-- Slideshow -->
-        <div v-else-if="settings.type === 'slideshow' && settings.slideshow_urls?.length" class="w-full h-full relative">
+        <div v-else-if="settings?.type === 'slideshow' && settings?.slideshow_urls?.length" class="w-full h-full relative">
             <transition-group name="fade">
-                <div v-for="(url, index) in settings.slideshow_urls" :key="url"
+                <div v-for="(url, index) in settings?.slideshow_urls" :key="url"
                     v-show="index === currentSlide"
                     class="absolute inset-0 w-full h-full"
                 >
