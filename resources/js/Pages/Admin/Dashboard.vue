@@ -21,17 +21,20 @@ const reset = () => {
 onMounted(() => {
     window.Echo.channel('monitor.all')
         .listen('QueueCreated', (e) => {
+            if (!e.queue) return;
             stats.value.total++;
             stats.value.waiting++;
-            const sIdx = services.value.findIndex(s => s.id === e.queue.service_id);
+            const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
             if (sIdx !== -1) services.value[sIdx].waiting_count++;
         })
         .listen('QueueCalled', (e) => {
+            if (!e.queue) return;
             stats.value.waiting--;
-            const sIdx = services.value.findIndex(s => s.id === e.queue.service_id);
+            const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
             if (sIdx !== -1) services.value[sIdx].waiting_count--;
         })
         .listen('QueueUpdated', (e) => {
+            if (!e.queue) return;
             if (e.queue.status === 'served') {
                 stats.value.served++;
             }

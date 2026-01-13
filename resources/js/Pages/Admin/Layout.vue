@@ -18,61 +18,79 @@ const navItems = [
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-50 flex">
+    <div class="h-screen bg-slate-100 flex overflow-hidden font-sans">
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20">
-            <div class="p-6 bg-blue-600">
+        <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 shadow-xl overflow-y-auto">
+            <div class="p-6 bg-blue-600 sticky top-0 z-10">
                 <h1 class="text-xl font-black tracking-tighter italic">ADMIN PANEL</h1>
                 <p class="text-xs text-blue-100 opacity-70">Antrian System v1.0</p>
             </div>
             
             <nav class="flex-1 p-4 space-y-1">
                 <Link v-for="item in navItems" :key="item.name" :href="item.href"
-                    class="flex items-center gap-3 p-3 rounded-lg transition-all"
-                    :class="$page.url.startsWith(item.href) ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
+                    class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+                    :class="$page.url.startsWith(item.href) ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 translate-x-1' : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
                 >
-                    <span>{{ item.icon }}</span>
-                    <span class="font-medium">{{ item.name }}</span>
+                    <span class="text-lg">{{ item.icon }}</span>
+                    <span class="font-bold text-sm">{{ item.name }}</span>
                 </Link>
             </nav>
 
-            <div class="p-4 border-t border-slate-800">
-                <div class="flex items-center gap-3 p-2">
-                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-blue-400">
+            <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div class="flex items-center gap-3 p-2 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-blue-400 border border-slate-600">
                         {{ user?.name[0] }}
                     </div>
                     <div class="overflow-hidden">
-                        <div class="text-sm font-bold truncate">{{ user?.name }}</div>
+                        <div class="text-sm font-bold truncate text-white">{{ user?.name }}</div>
                         <div class="text-[10px] text-slate-500 uppercase font-black">{{ user?.role }}</div>
                     </div>
                 </div>
-                <Link href="/logout" method="post" as="button" class="w-full mt-4 p-2 text-xs font-bold text-slate-500 hover:text-red-400 border border-slate-800 rounded-md transition-colors">
-                    LOGOUT
+                <Link href="/logout" method="post" as="button" class="w-full p-2 text-[10px] font-black tracking-widest text-slate-500 hover:text-red-400 border border-slate-800 rounded-lg hover:border-red-400/30 transition-all uppercase">
+                    Keluar Sistem
                 </Link>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col min-w-0">
+        <!-- Main Content Container -->
+        <div class="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-hidden">
             <!-- Top Bar -->
-            <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
+            <header class="bg-white border-b px-8 py-4 flex justify-between items-center shadow-sm z-30">
                 <div class="flex items-center gap-2">
-                    <span class="text-slate-400">Admin</span>
+                    <span class="text-slate-400 text-xs font-medium uppercase tracking-widest">Admin</span>
                     <span class="text-slate-300">/</span>
-                    <span class="font-bold text-slate-800 uppercase tracking-widest text-xs">
-                        {{ $page.url.split('/')[2] }}
+                    <span class="font-black text-slate-800 uppercase tracking-widest text-xs">
+                        {{ $page.url.split('/')[2]?.replace('-', ' ') || 'Dashboard' }}
                     </span>
                 </div>
                 
-                <div v-if="flash.success" class="absolute left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg animate-bounce">
-                    {{ flash.success }}
+                <!-- Flash Message -->
+                <transition name="fade">
+                    <div v-if="flash.success" class="bg-emerald-500 text-white px-6 py-2 rounded-full text-xs font-black shadow-lg shadow-emerald-500/20 animate-bounce">
+                        ✨ {{ flash.success }}
+                    </div>
+                </transition>
+
+                <div class="text-slate-300 text-xs font-medium">
+                    {{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <div class="flex-1 overflow-y-auto p-8">
-                <slot />
-            </div>
-        </main>
+            <!-- Scrollable Content Area -->
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-8">
+                <div class="max-w-7xl mx-auto">
+                    <slot />
+                </div>
+            </main>
+        </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.5s ease;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+</style>
