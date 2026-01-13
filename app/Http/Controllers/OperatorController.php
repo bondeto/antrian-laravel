@@ -71,6 +71,7 @@ class OperatorController extends Controller
         });
 
         if ($queue) {
+            $queue->load(['floor', 'counter', 'service']);
             broadcast(new QueueCalled($queue));
             return redirect()->back()->with('success', 'Calling ' . $queue->full_number);
         }
@@ -94,6 +95,7 @@ class OperatorController extends Controller
     {
         // Re-broadcast
         $queue->touch(); // Updated at
+        $queue->load(['floor', 'counter', 'service']);
         broadcast(new QueueCalled($queue));
         return redirect()->back();
     }

@@ -60,7 +60,7 @@ class QueueController extends Controller
         // Initial state
         $serving = Queue::where('floor_id', $floor_id)
             ->whereIn('status', ['called', 'serving'])
-            ->with(['counter', 'service'])
+            ->with(['counter', 'service', 'floor'])
             ->orderByDesc('called_at')
             ->take(5)
             ->get();

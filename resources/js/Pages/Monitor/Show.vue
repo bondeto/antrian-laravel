@@ -42,7 +42,9 @@ onMounted(() => {
 
             // Speak
             // e.g. "Nomor Antrian A-001, Silakan ke Loket 1"
-            const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${queue.counter?.name || 'Loket'}`;
+            const counterName = queue.counter?.name || 'Loket';
+            const floorName = queue.floor?.name || props.floor.name;
+            const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${counterName}`;
             playChime();
             setTimeout(() => speak(text), 1000);
 

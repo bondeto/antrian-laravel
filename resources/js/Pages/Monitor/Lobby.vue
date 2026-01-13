@@ -42,7 +42,9 @@ onMounted(() => {
                 if (serving.value.length > 12) serving.value.pop();
 
                 // TTS
-                const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${queue.counter?.name || 'Loket'}, di ${queue.floor?.name || 'Lantai'}`;
+                const counterName = queue.counter?.name || 'Loket';
+                const floorName = queue.floor?.name || 'Lantai';
+                const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${counterName}, di ${floorName}`;
                 speak(text);
 
                 // Clear overlay after 10s
@@ -95,7 +97,9 @@ onMounted(() => {
                         :class="{'ring-2 ring-blue-500 bg-slate-700 border-blue-400/50': index === 0}"
                     >
                         <div>
-                            <div class="text-[10px] text-slate-500 uppercase font-black mb-1">{{ q.floor?.name }} • {{ q.service?.name }}</div>
+                            <div class="text-[10px] text-slate-500 uppercase font-black mb-1">
+                                {{ q.floor?.name || 'Tujuan' }} • {{ q.service?.name || 'Layanan' }}
+                            </div>
                             <div class="text-4xl font-black text-white font-mono">{{ q.full_number }}</div>
                         </div>
                         <div class="text-right">
