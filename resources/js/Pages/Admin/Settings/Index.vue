@@ -14,6 +14,8 @@ const form = useForm({
     slideshow_urls: props.settings.slideshow_urls || [],
     news_ticker: props.settings.news_ticker,
     skip_handling: props.settings.skip_handling || 'hangus',
+    monitor_header: props.settings.monitor_header || 'Pusat Antrian',
+    monitor_subheader: props.settings.monitor_subheader || 'Lobby Utama',
 });
 
 const newImageUrl = ref('');
@@ -108,6 +110,23 @@ const submit = () => {
                 <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">News Ticker (Teks Berjalan)</label>
                 <textarea v-model="form.news_ticker" rows="3" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Masukkan pengumuman atau informasi yang akan ditampilkan di bawah layar..."></textarea>
                 <p class="text-[10px] text-slate-400">Teks ini akan muncul di footer monitor antrian.</p>
+            </div>
+
+            <!-- Monitor Display Customization -->
+            <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Tampilan Header Monitor</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Header Utama</label>
+                        <input v-model="form.monitor_header" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Pusat Antrian" />
+                        <p class="text-[10px] text-slate-400 mt-1">Nama utama yang muncul di header monitor</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Sub-Header</label>
+                        <input v-model="form.monitor_subheader" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Lobby Utama" />
+                        <p class="text-[10px] text-slate-400 mt-1">Keterangan tambahan di bawah header</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Skip Ticket Handling -->

@@ -19,6 +19,8 @@ class SettingController extends Controller
                 'local_video_url' => Setting::get('local_video_url', ''),
                 'news_ticker' => Setting::get('news_ticker', ''),
                 'skip_handling' => Setting::get('skip_handling', 'hangus'),
+                'monitor_header' => Setting::get('monitor_header', 'Pusat Antrian'),
+                'monitor_subheader' => Setting::get('monitor_subheader', 'Lobby Utama'),
             ]
         ]);
     }
@@ -32,6 +34,8 @@ class SettingController extends Controller
             'slideshow_urls' => 'nullable|array',
             'news_ticker' => 'nullable|string',
             'skip_handling' => 'required|in:hangus,belakang,pindah_1,pindah_2',
+            'monitor_header' => 'nullable|string|max:100',
+            'monitor_subheader' => 'nullable|string|max:100',
         ]);
 
         Setting::set('media_type', $data['media_type']);
@@ -40,6 +44,8 @@ class SettingController extends Controller
         Setting::set('slideshow_urls', $data['slideshow_urls'] ?? [], 'json');
         Setting::set('news_ticker', $data['news_ticker'] ?? '');
         Setting::set('skip_handling', $data['skip_handling']);
+        Setting::set('monitor_header', $data['monitor_header'] ?? 'Pusat Antrian');
+        Setting::set('monitor_subheader', $data['monitor_subheader'] ?? 'Lobby Utama');
 
         return redirect()->back()->with('success', 'Pengaturan berhasil disimpan.');
     }

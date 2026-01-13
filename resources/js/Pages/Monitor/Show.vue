@@ -44,7 +44,7 @@ onMounted(() => {
     <div class="min-h-screen bg-gray-900 text-white overflow-hidden flex flex-col">
         <!-- Header -->
         <header class="bg-blue-800 p-4 shadow-lg text-center z-10">
-            <h1 class="text-3xl font-bold tracking-wider">{{ floor.name }} - ANTREAN KANTOR</h1>
+            <h1 class="text-3xl font-bold tracking-wider">{{ floor.name }} - {{ mediaSettings.monitor_header || 'ANTREAN KANTOR' }}</h1>
         </header>
 
         <!-- Main Content -->

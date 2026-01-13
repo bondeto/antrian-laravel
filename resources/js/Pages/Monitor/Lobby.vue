@@ -56,8 +56,8 @@ onMounted(() => {
                     <span class="text-3xl">🏛️</span>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-1">Pusat Antrian</h1>
-                    <p class="text-blue-400 text-[10px] font-black tracking-[0.3em] uppercase opacity-70">Lobby Utama • {{ floors.length }} Lantai Terintegrasi</p>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-1">{{ mediaSettings.monitor_header || 'Pusat Antrian' }}</h1>
+                    <p class="text-blue-400 text-[10px] font-black tracking-[0.3em] uppercase opacity-70">{{ mediaSettings.monitor_subheader || 'Lobby Utama' }} • {{ floors.length }} Lantai Terintegrasi</p>
                 </div>
             </div>
             <div class="flex items-center gap-8">
