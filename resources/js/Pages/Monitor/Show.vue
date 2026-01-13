@@ -18,9 +18,12 @@ const serving = ref(props.initialServing);
 const lastCalled = ref(null);
 
 onMounted(() => {
+    console.log('[Monitor/Show] Mounted for floor:', props.floor?.id, props.floor?.name);
+    
     // Listen to changes
     window.Echo.channel(`monitor.floor.${props.floor.id}`)
         .listen('QueueCalled', (e) => {
+            console.log('[Monitor/Show] QueueCalled event received:', e);
             const queue = e.queue;
             lastCalled.value = queue;
             
@@ -29,6 +32,7 @@ onMounted(() => {
             if (serving.value.length > 5) serving.value.pop();
 
             // Play voice announcement using airport audio
+            console.log('[Monitor/Show] Playing voice for queue:', queue?.full_number);
             playQueueCall(queue);
 
             // Clear overlay after 8s

@@ -7,14 +7,21 @@ export function useQueueVoice() {
         return new Promise((resolve, reject) => {
             const audio = new Audio(path);
             audio.onended = () => resolve();
-            audio.onerror = (e) => reject(e);
-            audio.play().catch(err => reject(err));
+            audio.onerror = (e) => {
+                console.warn(`[QueueVoice] Failed to load audio: ${path}`);
+                resolve(); // Continue even if one file fails
+            };
+            audio.play().catch(err => {
+                console.warn(`[QueueVoice] Failed to play audio: ${path}`, err);
+                resolve(); // Continue even if play fails
+            });
         });
     };
 
     const getNumberSequence = (num) => {
         const sequence = [];
         if (num === 0) return ['0'];
+        if (isNaN(num)) return ['0'];
 
         if (num === 100) return ['seratus'];
         if (num === 1000) return ['seribu'];
@@ -56,23 +63,40 @@ export function useQueueVoice() {
 
         isProcessing = true;
         const queueData = callQueue.shift();
-        console.log('[QueueVoice] Starting call sequence for:', queueData.full_number);
+
+        console.log('[QueueVoice] Processing queue data:', queueData);
+
+        if (!queueData || !queueData.full_number) {
+            console.error('[QueueVoice] Invalid queue data - missing full_number');
+            isProcessing = false;
+            processQueue();
+            return;
+        }
 
         try {
             const basePath = window.location.origin + '/bandara';
             const audioList = [];
 
-            // 1. Ding dong / Initial sound (Optional if you have one, currently just nomor-antrean)
-
-            // 2. Nomor Antrean
+            // 1. Nomor Antrean
             audioList.push(`${basePath}/frasa/nomor-antrean.wav`);
 
-            // 3. Huruf (Layanan)
-            const prefix = queueData.full_number.split('-')[0].toUpperCase();
+            // 2. Huruf (Layanan) - extract from full_number like "A-001"
+            const parts = queueData.full_number.split('-');
+            const prefix = parts[0]?.toUpperCase() || 'A';
             audioList.push(`${basePath}/huruf/${prefix}.wav`);
 
-            // 4. Angka Nomor
-            const num = parseInt(queueData.number);
+            // 3. Angka Nomor - use number field OR extract from full_number
+            let num = queueData.number;
+            if (num === undefined || num === null) {
+                // Fallback: extract from full_number (e.g., "A-001" -> 1)
+                const numPart = parts[1] || '0';
+                num = parseInt(numPart, 10);
+            } else {
+                num = parseInt(num, 10);
+            }
+
+            console.log('[QueueVoice] Extracted number:', num);
+
             const numSeq = getNumberSequence(num);
             numSeq.forEach(s => {
                 if (['seratus', 'seribu', 'ratus', 'ribu', 'puluh', 'belas'].includes(s)) {
@@ -82,17 +106,17 @@ export function useQueueVoice() {
                 }
             });
 
-            // 5. Silakan Menuju
+            // 4. Silakan Menuju
             audioList.push(`${basePath}/frasa/silakan-menuju.wav`);
 
-            // 6. Loket / Meja
+            // 5. Loket / Meja
             audioList.push(`${basePath}/frasa/loket.wav`);
 
-            // 7. Nomor Loket
+            // 6. Nomor Loket
             const counterName = queueData.counter?.name || '';
             const counterMatch = counterName.match(/\d+/);
             if (counterMatch) {
-                const counterNum = parseInt(counterMatch[0]);
+                const counterNum = parseInt(counterMatch[0], 10);
                 const counterSeq = getNumberSequence(counterNum);
                 counterSeq.forEach(s => {
                     if (['seratus', 'seribu', 'ratus', 'ribu', 'puluh', 'belas'].includes(s)) {
@@ -103,11 +127,13 @@ export function useQueueVoice() {
                 });
             }
 
+            console.log('[QueueVoice] Audio sequence:', audioList);
+
             // Play one by one
             for (const audioPath of audioList) {
                 await playAudio(audioPath);
             }
-            console.log('[QueueVoice] Sequence completed.');
+            console.log('[QueueVoice] Sequence completed for:', queueData.full_number);
 
             // Pause slightly between different calls
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -122,6 +148,7 @@ export function useQueueVoice() {
     };
 
     const playQueueCall = (queue) => {
+        console.log('[QueueVoice] Adding to queue:', queue?.full_number);
         callQueue.push(queue);
         processQueue();
     };
