@@ -1,6 +1,6 @@
 <script setup>
-import { router } from '@inertiajs/vue3';
-import { defineProps } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { router, Head } from '@inertiajs/vue3';
 
 const props = defineProps({
     counter: Object,
@@ -9,92 +9,226 @@ const props = defineProps({
     flash: Object,
 });
 
+const isLoading = ref(false);
+const currentTime = ref(new Date());
+let timeInterval = null;
+
+onMounted(() => {
+    timeInterval = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
+});
+
+onUnmounted(() => {
+    if (timeInterval) clearInterval(timeInterval);
+});
+
 const callNext = () => {
-    router.post(`/operator/${props.counter.id}/call`);
+    if (isLoading.value) return;
+    isLoading.value = true;
+    router.post(`/operator/${props.counter.id}/call`, {}, {
+        onFinish: () => isLoading.value = false
+    });
 };
 
 const recall = () => {
-    if (props.currentQueue) {
-        router.post(`/operator/queue/${props.currentQueue.id}/recall`);
+    if (props.currentQueue && !isLoading.value) {
+        isLoading.value = true;
+        router.post(`/operator/queue/${props.currentQueue.id}/recall`, {}, {
+            onFinish: () => isLoading.value = false
+        });
     }
 };
 
 const served = () => {
-    if (props.currentQueue) {
-        router.post(`/operator/queue/${props.currentQueue.id}/served`);
+    if (props.currentQueue && !isLoading.value) {
+        isLoading.value = true;
+        router.post(`/operator/queue/${props.currentQueue.id}/served`, {}, {
+            onFinish: () => isLoading.value = false
+        });
     }
 };
 
 const skip = () => {
-    if (props.currentQueue) {
-        router.post(`/operator/queue/${props.currentQueue.id}/skip`);
+    if (props.currentQueue && !isLoading.value) {
+        isLoading.value = true;
+        router.post(`/operator/queue/${props.currentQueue.id}/skip`, {}, {
+            onFinish: () => isLoading.value = false
+        });
     }
 };
 
 const exit = () => {
     router.get('/operator');
 };
+
+const formatTime = (date) => {
+    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const formatDate = (date) => {
+    return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+};
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 flex flex-col">
+    <Head :title="`Operator - ${counter.name}`" />
+    
+    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col font-sans">
         <!-- Header -->
-        <header class="bg-white shadow p-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold text-gray-800">Operator Panel - {{ counter.name }}</h1>
-                <p class="text-sm text-gray-500">{{ counter.floor.name }}</p>
+        <header class="bg-white/5 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
+                    <span class="text-2xl">🖥️</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-white tracking-tight">{{ counter.name }}</h1>
+                    <p class="text-blue-400 text-xs font-bold uppercase tracking-widest">{{ counter.floor?.name }}</p>
+                </div>
             </div>
-            <button @click="exit" class="text-red-500 hover:text-red-700 font-semibold">Exit</button>
+            
+            <div class="flex items-center gap-6">
+                <!-- Clock -->
+                <div class="text-right hidden sm:block">
+                    <div class="text-2xl font-mono font-bold text-white">{{ formatTime(currentTime) }}</div>
+                    <div class="text-slate-400 text-[10px] uppercase tracking-widest">{{ formatDate(currentTime) }}</div>
+                </div>
+                
+                <button @click="exit" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-4 py-2 rounded-xl font-bold text-sm transition-all border border-red-500/30 hover:border-red-500">
+                    ← Keluar
+                </button>
+            </div>
         </header>
 
-        <main class="flex-1 p-6 container mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Left: Current Action -->
-            <div class="bg-white p-8 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
-                <h2 class="text-gray-400 font-bold uppercase tracking-widest mb-4">Sedang Melayani</h2>
+        <!-- Main Content -->
+        <main class="flex-1 p-6 lg:p-8">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
                 
-                <div v-if="currentQueue" class="animate-pulse-once">
-                    <div class="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full mb-2 inline-block">{{ currentQueue.service.name }}</div>
-                    <div class="text-8xl font-black text-gray-900 mb-6 font-mono">{{ currentQueue.full_number }}</div>
-                    <div class="text-green-500 font-bold text-xl mb-8">Status: {{ currentQueue.status.toUpperCase() }}</div>
+                <!-- Left: Currently Serving (3 cols) -->
+                <div class="lg:col-span-3 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 flex flex-col items-center justify-center relative overflow-hidden">
+                    <!-- Decorative Elements -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10 text-center w-full">
+                        <div class="flex items-center justify-center gap-2 mb-6">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                            <h2 class="text-slate-400 text-xs font-black uppercase tracking-[0.3em]">Sedang Melayani</h2>
+                        </div>
+                        
+                        <div v-if="currentQueue" class="animate-fade-in">
+                            <!-- Service Badge -->
+                            <div class="inline-block bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/30 text-blue-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                                {{ currentQueue.service?.name }}
+                            </div>
+                            
+                            <!-- Queue Number - HUGE -->
+                            <div class="text-[10rem] leading-none font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-blue-100 to-blue-300 font-mono tracking-tighter mb-6 drop-shadow-2xl">
+                                {{ currentQueue.full_number }}
+                            </div>
+                            
+                            <!-- Status Badge -->
+                            <div class="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-10">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                {{ currentQueue.status === 'called' ? 'Dipanggil' : 'Sedang Dilayani' }}
+                            </div>
 
-                    <div class="grid grid-cols-2 gap-4 w-full max-w-md">
-                        <button @click="recall" class="bg-yellow-500 text-white py-4 rounded-lg font-bold hover:bg-yellow-600 transition shadow">
-                            📢 Panggil Ulang
-                        </button>
-                        <button @click="served" class="bg-green-600 text-white py-4 rounded-lg font-bold hover:bg-green-700 transition shadow">
-                            ✅ Selesai
-                        </button>
-                        <button @click="skip" class="bg-red-500 text-white py-4 rounded-lg font-bold hover:bg-red-600 transition shadow col-span-2">
-                            🚫 Skip / Lewati
-                        </button>
+                            <!-- Action Buttons -->
+                            <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+                                <button 
+                                    @click="recall" 
+                                    :disabled="isLoading"
+                                    class="group bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 hover:border-amber-500 text-amber-400 hover:text-white py-5 rounded-2xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📢</div>
+                                    <div class="text-xs uppercase tracking-wider">Panggil Ulang</div>
+                                </button>
+                                
+                                <button 
+                                    @click="served" 
+                                    :disabled="isLoading"
+                                    class="group bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 hover:border-emerald-500 text-emerald-400 hover:text-white py-5 rounded-2xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">✅</div>
+                                    <div class="text-xs uppercase tracking-wider">Selesai</div>
+                                </button>
+                                
+                                <button 
+                                    @click="skip" 
+                                    :disabled="isLoading"
+                                    class="group bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white py-5 rounded-2xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⏭️</div>
+                                    <div class="text-xs uppercase tracking-wider">Lewati</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else class="py-16">
+                            <div class="text-8xl mb-6 opacity-30">🎯</div>
+                            <p class="text-slate-400 text-xl font-bold mb-2">Tidak Ada Antrian Aktif</p>
+                            <p class="text-slate-500 text-sm">Silakan panggil nomor berikutnya untuk memulai pelayanan.</p>
+                        </div>
                     </div>
                 </div>
 
-                <div v-else class="py-20 text-gray-400">
-                    <div class="text-6xl mb-4">☕</div>
-                    <p class="text-xl">Tidak ada antrian aktif.</p>
-                    <p class="text-sm">Silakan panggil nomor berikutnya.</p>
-                </div>
-            </div>
+                <!-- Right: Controls & Stats (2 cols) -->
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <!-- Main Call Button -->
+                    <button 
+                        @click="callNext" 
+                        :disabled="isLoading"
+                        class="group relative bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 p-8 rounded-3xl shadow-2xl shadow-blue-500/30 text-white text-center transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                    >
+                        <!-- Animated Background -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="text-6xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                                {{ isLoading ? '⏳' : '📞' }}
+                            </div>
+                            <h2 class="text-2xl font-black tracking-tight mb-1">PANGGIL BERIKUTNYA</h2>
+                            <p class="text-blue-200 text-sm font-medium">Klik untuk memanggil antrian</p>
+                        </div>
+                    </button>
 
-            <!-- Right: Controls & Stats -->
-            <div class="flex flex-col gap-6">
-                <!-- Main Call Button -->
-                <div class="bg-blue-600 p-8 rounded-xl shadow-lg text-white text-center hover:bg-blue-700 transition cursor-pointer" @click="callNext">
-                    <div class="text-6xl mb-2">📞</div>
-                    <h2 class="text-3xl font-bold">PANGGIL BERIKUTNYA</h2>
-                    <p class="mt-2 opacity-80">Klik untuk memanggil antrian waiting terlama</p>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-6 rounded-xl shadow text-center">
-                        <div class="text-3xl font-bold text-blue-600">{{ stats.waiting }}</div>
-                        <div class="text-gray-500 text-sm">Menunggu</div>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-blue-400 font-mono mb-1">{{ stats.waiting }}</div>
+                            <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Menunggu</div>
+                            <div class="mt-3 w-full bg-slate-700 rounded-full h-1.5">
+                                <div class="bg-blue-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(stats.waiting * 10, 100)}%`"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-emerald-400 font-mono mb-1">{{ stats.served }}</div>
+                            <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Selesai</div>
+                            <div class="mt-3 w-full bg-slate-700 rounded-full h-1.5">
+                                <div class="bg-emerald-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(stats.served * 5, 100)}%`"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow text-center">
-                        <div class="text-3xl font-bold text-green-600">{{ stats.served }}</div>
-                        <div class="text-gray-500 text-sm">Selesai (Counter Ini)</div>
+
+                    <!-- Quick Tips -->
+                    <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl">
+                        <div class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-3">Pintasan Keyboard</div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between text-slate-300">
+                                <span>Panggil Berikutnya</span>
+                                <kbd class="bg-slate-700 px-2 py-0.5 rounded text-xs font-mono">Space</kbd>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span>Selesai</span>
+                                <kbd class="bg-slate-700 px-2 py-0.5 rounded text-xs font-mono">Enter</kbd>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span>Panggil Ulang</span>
+                                <kbd class="bg-slate-700 px-2 py-0.5 rounded text-xs font-mono">R</kbd>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -102,8 +236,19 @@ const exit = () => {
     </div>
 </template>
 
-<style>
-.animate-pulse-once {
-    animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+<style scoped>
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 </style>
