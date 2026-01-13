@@ -46,22 +46,38 @@ Sistem antrian realtime menggunakan Laravel Latest, Inertia Vue, dan Laravel Rev
    ./vendor/bin/sail artisan migrate --seed
    ```
 
-6. **Jalankan Workflow (3 Terminal)**
+## Cara Menjalankan
 
-   **Terminal 1: Vite (Frontend)**
-   ```bash
-   npm run dev
-   ```
+### Cara Cepat (Windows)
+Cukup klik dua kali file `run-app.bat` di folder root. File ini akan otomatis menjalankan:
+1. Docker Containers
+2. Laravel Serve
+3. Vite Dev Session
+4. Reverb WebSocket Server
+5. Queue Worker
 
-   **Terminal 2: Reverb (WebSocket)**
-   ```bash
-   ./vendor/bin/sail artisan reverb:start
-   ```
+### Cara Manual (3-4 Terminal)
+Jika ingin menjalankan secara manual, gunakan perintah berikut di terminal terpisah:
 
-   **Terminal 3: Worker (Opsional, jika menggunakan queue)**
-   ```bash
-   ./vendor/bin/sail artisan queue:work
-   ```
+**Terminal 1: Vite (Frontend)**
+```bash
+npm run dev
+```
+
+**Terminal 2: Reverb (WebSocket)**
+```bash
+./vendor/bin/sail artisan reverb:start
+```
+
+**Terminal 3: Worker (Opsional, jika menggunakan queue)**
+```bash
+./vendor/bin/sail artisan queue:work
+```
+
+**Terminal 4: Laravel Serve (Jika tidak menggunakan Docker Sail untuk serve)**
+```bash
+php artisan serve
+```
 
 ## Akun Login Operator
 - **Email**: `op1@example.com`

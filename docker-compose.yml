@@ -9,9 +9,9 @@ services:
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:5173'
-            - '8080:8080'
+            - '80:80'
+            - '5173:5173'
+            - '8081:8080'
         environment:
             WWWUSER: '${WWWUSER:-1000}'
             LARAVEL_SAIL: 1
@@ -21,55 +21,41 @@ services:
         volumes:
             - '.:/var/www/html'
         networks:
-            - antrian-network
+            - sail
         depends_on:
             - pgsql
             - redis
-
     pgsql:
         image: 'postgres:15'
         ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
+            - '5434:5432'
         environment:
-            POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+            POSTGRES_DB: antrian
+            POSTGRES_USER: antrian
+            POSTGRES_PASSWORD: password
         volumes:
             - 'pgsql-antrian:/var/lib/postgresql/data'
         networks:
-            - antrian-network
+            - sail
         healthcheck:
-            test:
-                - CMD
-                - pg_isready
-                - '-q'
-                - '-d'
-                - '${DB_DATABASE}'
-                - '-U'
-                - '${DB_USERNAME}'
+            test: ["CMD", "pg_isready", "-q", "-d", "antrian", "-U", "antrian"]
             retries: 3
             timeout: 5s
-
     redis:
         image: 'redis:alpine'
         ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
+            - '6380:6379'
         volumes:
             - 'redis-antrian:/data'
         networks:
-            - antrian-network
+            - sail
         healthcheck:
-            test:
-                - CMD
-                - redis-cli
-                - ping
+            test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
-
 networks:
-    antrian-network:
+    sail:
         driver: bridge
-
 volumes:
     pgsql-antrian:
         driver: local
