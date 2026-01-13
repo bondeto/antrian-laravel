@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN
     Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::get('/counter-status', [AdminController::class, 'counterStatus'])->name('counter-status');
         Route::post('/reset', [AdminController::class, 'reset'])->name('reset');
         
         // Management

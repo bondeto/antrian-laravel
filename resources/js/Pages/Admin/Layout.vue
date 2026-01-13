@@ -8,6 +8,7 @@ const flash = computed(() => page.props.flash);
 
 const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
+    { name: 'Monitor Status', href: '/admin/counter-status', icon: '📡' },
     { name: 'Users & Roles', href: '/admin/users', icon: '👥' },
     { name: 'Lantai', href: '/admin/floors', icon: '🏢' },
     { name: 'Layanan', href: '/admin/services', icon: '🛠️' },
