@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Floor;
 use App\Models\Queue;
 use App\Models\Service;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ class AdminController extends Controller
             ],
             'services' => Service::withCount(['queues as waiting_count' => function($query) {
                 $query->where('status', 'waiting');
-            }])->get()
+            }])->get(),
+            'floors' => Floor::all()
         ]);
     }
 

@@ -18,4 +18,9 @@ class Floor extends Model
     {
         return $this->hasMany(Counter::class);
     }
+
+    public function queues(): HasMany
+    {
+        return $this->hasMany(Queue::class);
+    }
 }

@@ -5,6 +5,7 @@ import Layout from './Layout.vue';
 const props = defineProps({
     stats: Object,
     services: Array,
+    floors: Array,
 });
 
 const reset = () => {
@@ -45,6 +46,22 @@ const reset = () => {
                 <div class="text-4xl font-black text-green-600">{{ stats.served }}</div>
                 <div class="mt-4 text-xs text-green-400 font-bold">Total Terlayani</div>
             </div>
+        </div>
+
+        <!-- Monitor Shortcuts -->
+        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-4">Layar Monitor (Buka di Tab Baru)</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <a href="/lobby" target="_blank" class="bg-indigo-600 p-4 rounded-xl shadow-lg border border-indigo-500 hover:bg-indigo-700 transition-all group">
+                <div class="text-white font-black uppercase tracking-tighter text-sm mb-1">Lobby Utama</div>
+                <div class="text-indigo-200 text-[10px] font-bold uppercase tracking-widest group-hover:text-white transition-colors">Semua Lantai &rarr;</div>
+            </a>
+            
+            <a v-for="floor in floors" :key="floor.id" :href="`/monitor/${floor.id}`" target="_blank" 
+                class="bg-white p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:shadow-md transition-all group"
+            >
+                <div class="text-slate-800 font-black uppercase tracking-tighter text-sm mb-1">{{ floor.name }}</div>
+                <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest group-hover:text-blue-500 transition-colors">Monitor Lantai &rarr;</div>
+            </a>
         </div>
 
         <!-- Services Status -->
