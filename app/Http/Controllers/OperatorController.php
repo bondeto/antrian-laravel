@@ -89,8 +89,8 @@ class OperatorController extends Controller
             'served_at' => now(),
         ]);
         
-        // Broadcast update if needed (e.g. to remove from 'serving' list on monitor)
-        // For now, just Inertia refresh
+        broadcast(new \App\Events\QueueUpdated($queue->load(['floor', 'counter', 'service'])));
+        
         return redirect()->back();
     }
     
@@ -106,6 +106,7 @@ class OperatorController extends Controller
     public function skip(Request $request, Queue $queue)
     {
         $queue->update(['status' => 'skipped']);
+        broadcast(new \App\Events\QueueUpdated($queue->load(['floor', 'counter', 'service'])));
         return redirect()->back();
     }
 }

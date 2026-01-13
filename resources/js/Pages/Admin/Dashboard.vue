@@ -1,4 +1,5 @@
 <script setup>
+import { ref, onMounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import Layout from './Layout.vue';
 
@@ -9,11 +10,58 @@ const props = defineProps({
     counters: Array,
 });
 
+const counters = ref(props.counters);
+const stats = ref(props.stats);
+const services = ref(props.services);
+
 const reset = () => {
     if (confirm('PERINGATAN: Ini akan menghapus semua data antrian dan mereset nomor ke 0. Lanjutkan?')) {
         router.post('/admin/reset');
     }
 };
+
+onMounted(() => {
+    // Listen to ALL events on one global channel for admin
+    window.Echo.channel('monitor.all')
+        .listen('QueueCreated', (e) => {
+            stats.value.total++;
+            stats.value.waiting++;
+            // Update specific service count
+            const sIdx = services.value.findIndex(s => s.id === e.queue.service_id);
+            if (sIdx !== -1) services.value[sIdx].waiting_count++;
+        })
+        .listen('QueueCalled', (e) => {
+            const queue = e.queue;
+            
+            // Decrement waiting, status is now 'called' (still in total)
+            stats.value.waiting--;
+            
+            // Update service waiting count
+            const sIdx = services.value.findIndex(s => s.id === queue.service_id);
+            if (sIdx !== -1) services.value[sIdx].waiting_count--;
+
+            // Update counter status
+            const cIdx = counters.value.findIndex(c => c.id === queue.counter_id);
+            if (cIdx !== -1) {
+                counters.value[cIdx].active_queue = queue;
+            }
+        })
+        .listen('QueueUpdated', (e) => {
+            const queue = e.queue;
+            
+            if (queue.status === 'served') {
+                stats.value.served++;
+            }
+
+            // If served or skipped, clear the active queue from the counter
+            if (queue.status === 'served' || queue.status === 'skipped') {
+                const cIdx = counters.value.findIndex(c => c.id === queue.counter_id);
+                if (cIdx !== -1) {
+                    counters.value[cIdx].active_queue = null;
+                }
+            }
+        });
+});
 </script>
 
 <template>

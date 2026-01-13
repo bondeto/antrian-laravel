@@ -26,6 +26,7 @@ class QueueCalled implements ShouldBroadcastNow
     {
         return [
             new Channel('monitor.floor.' . $this->queue->floor_id),
+            new Channel('monitor.all'),
             // Also update operator dashboards if needed (e.g. to show it's currently being served)
             new Channel('service.' . $this->queue->service_id), 
         ];
