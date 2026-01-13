@@ -11,38 +11,48 @@ const props = defineProps({
 });
 
 const { playQueueCall } = useQueueVoice();
-const serving = ref(props.initialServing);
+const serving = ref(props.initialServing || []);
 const lastCalled = ref(null);
 const showOverlay = ref(false);
 
 onMounted(() => {
+    console.log('[Lobby] Mounted. Floors:', props.floors);
+    console.log('[Lobby] Initial Serving:', props.initialServing);
+    console.log('[Lobby] Media Settings:', props.mediaSettings);
+
     // Listen for calls on ALL floors for the lobby
-    props.floors.forEach(floor => {
-        window.Echo.channel(`monitor.floor.${floor.id}`)
-            .listen('QueueCalled', (e) => {
-                const queue = e.queue;
-                
-                // Overlay logic
-                lastCalled.value = queue;
-                showOverlay.value = true;
-                
-                // Update list
-                const exists = serving.value.findIndex(q => q.id === queue.id);
-                if (exists !== -1) {
-                    serving.value.splice(exists, 1);
-                }
-                serving.value.unshift(queue);
-                if (serving.value.length > 5) serving.value.pop();
+    if (props.floors && props.floors.length > 0) {
+        props.floors.forEach(floor => {
+            console.log(`[Lobby] Subscribing to channel: monitor.floor.${floor.id}`);
+            window.Echo.channel(`monitor.floor.${floor.id}`)
+                .listen('QueueCalled', (e) => {
+                    console.log('[Lobby] QueueCalled event received:', e);
+                    const queue = e.queue;
+                    
+                    // Overlay logic
+                    lastCalled.value = queue;
+                    showOverlay.value = true;
+                    
+                    // Update list
+                    const exists = serving.value.findIndex(q => q.id === queue.id);
+                    if (exists !== -1) {
+                        serving.value.splice(exists, 1);
+                    }
+                    serving.value.unshift(queue);
+                    if (serving.value.length > 5) serving.value.pop();
 
-                // Play voice announcement using airport audio
-                playQueueCall(queue);
+                    // Play voice announcement using airport audio
+                    playQueueCall(queue);
 
-                // Clear overlay after 10s
-                setTimeout(() => {
-                    showOverlay.value = false;
-                }, 10000);
-            });
-    });
+                    // Clear overlay after 10s
+                    setTimeout(() => {
+                        showOverlay.value = false;
+                    }, 10000);
+                });
+        });
+    } else {
+        console.warn('[Lobby] No floors found! Cannot subscribe to any channels.');
+    }
 });
 </script>
 
