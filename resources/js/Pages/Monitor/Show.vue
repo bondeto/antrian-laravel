@@ -1,3 +1,4 @@
+<script setup>
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PromoMedia from '@/Components/PromoMedia.vue';
