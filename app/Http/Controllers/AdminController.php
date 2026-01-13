@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Counter;
 use App\Models\Floor;
 use App\Models\Queue;
 use App\Models\Service;
