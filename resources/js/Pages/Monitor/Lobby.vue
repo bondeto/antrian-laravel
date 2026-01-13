@@ -32,7 +32,7 @@ onMounted(() => {
                     serving.value.splice(exists, 1);
                 }
                 serving.value.unshift(queue);
-                if (serving.value.length > 6) serving.value.pop();
+                if (serving.value.length > 5) serving.value.pop();
 
                 // Play voice announcement using airport audio
                 playQueueCall(queue);
@@ -48,61 +48,74 @@ onMounted(() => {
 
 <template>
     <Head title="Lobby Utama - Monitor Panggilan" />
-    <div class="min-h-screen bg-[#0f172a] text-white flex flex-col font-sans overflow-hidden">
+    <div class="h-screen bg-[#020617] text-white flex flex-col font-sans overflow-hidden">
         <!-- Header -->
-        <header class="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 shadow-2xl flex justify-between items-center border-b border-blue-500/30">
+        <header class="bg-slate-900/50 backdrop-blur-md p-6 shadow-2xl flex justify-between items-center border-b border-white/5 relative z-10">
             <div class="flex items-center gap-4">
-                <div class="bg-blue-500 p-3 rounded-lg shadow-lg shadow-blue-500/20">
+                <div class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
                     <span class="text-3xl">🏛️</span>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase">Lobby Utama</h1>
-                    <p class="text-blue-300 text-sm font-medium tracking-widest uppercase">Pusat Informasi Antrian</p>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-1">Pusat Antrian</h1>
+                    <p class="text-blue-400 text-[10px] font-black tracking-[0.3em] uppercase opacity-70">Lobby Utama • {{ floors.length }} Lantai Terintegrasi</p>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-3xl font-mono font-bold text-blue-100" id="clock">
-                    {{ new Date().toLocaleTimeString('id-ID') }}
+            <div class="flex items-center gap-8">
+                <div class="text-right">
+                    <div class="text-4xl font-mono font-black text-white" id="clock">
+                        {{ new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}
+                    </div>
+                    <div class="text-slate-400 text-[10px] font-black uppercase tracking-widest">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }) }}</div>
                 </div>
-                <div class="text-blue-400 text-sm">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</div>
             </div>
         </header>
 
         <!-- Content -->
-        <main class="flex-1 p-6 grid grid-cols-12 gap-6 relative overflow-hidden">
-            <!-- Left: Media Section -->
-            <div class="col-span-8 rounded-3xl overflow-hidden shadow-2xl border border-slate-700/50 relative">
+        <main class="flex-1 p-8 flex gap-8 relative overflow-hidden bg-radial-at-t from-slate-900 via-[#020617] to-[#020617]">
+            <!-- Left: Media Section (Stronger Presence) -->
+            <div class="flex-[1.8] rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 relative bg-black group transition-all">
                 <PromoMedia :settings="mediaSettings" />
+                <div class="absolute inset-0 pointer-events-none border-[12px] border-slate-900/50 rounded-[2.5rem]"></div>
             </div>
 
-            <!-- Right: Serving List -->
-            <div class="col-span-4 flex flex-col gap-4 overflow-hidden">
-                <div class="text-xs font-black text-blue-400 uppercase tracking-[0.3em] mb-2 px-2 flex justify-between">
-                    <span>Panggilan Aktif</span>
-                    <span>Total: {{ serving.length }}</span>
-                </div>
-                <transition-group name="list">
-                    <div v-for="(q, index) in serving" :key="q.id" 
-                        class="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 p-4 rounded-2xl shadow-lg flex justify-between items-center transition-all duration-300"
-                        :class="{'ring-2 ring-blue-500 bg-slate-700 border-blue-400/50': index === 0}"
-                    >
-                        <div>
-                            <div class="text-[10px] text-slate-500 uppercase font-black mb-1">
-                                {{ q.floor?.name || 'Tujuan' }} • {{ q.service?.name || 'Layanan' }}
-                            </div>
-                            <div class="text-4xl font-black text-white font-mono">{{ q.full_number }}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-blue-400 uppercase font-bold mb-1">Ke</div>
-                            <div class="text-xl font-bold uppercase text-white leading-none">{{ q.counter?.name }}</div>
-                        </div>
+            <!-- Right: Serving List (Clean & Spaced) -->
+            <div class="flex-1 flex flex-col gap-6">
+                <div class="flex items-center justify-between px-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                        <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Panggilan Aktif</h2>
                     </div>
-                </transition-group>
+                    <div class="bg-slate-800/50 px-3 py-1 rounded-full text-[10px] font-black text-slate-500 border border-white/5 uppercase">5 Terakhir</div>
+                </div>
 
-                <!-- Empty State -->
-                <div v-if="serving.length === 0" class="flex-1 flex flex-col items-center justify-center opacity-20 border-2 border-dashed border-slate-700 rounded-2xl">
-                    <span class="text-6xl mb-4">🎫</span>
-                    <p class="text-sm font-bold uppercase tracking-widest">Menunggu Panggilan</p>
+                <div class="flex-1 flex flex-col gap-4">
+                    <transition-group name="list">
+                        <div v-for="(q, index) in serving" :key="q.id" 
+                            class="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] shadow-2xl flex justify-between items-center relative overflow-hidden group"
+                            :class="{'ring-2 ring-blue-500 bg-blue-600/10 border-blue-500/30': index === 0}"
+                        >
+                            <!-- Index Indicator -->
+                            <div v-if="index === 0" class="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-12 bg-blue-500 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.8)]"></div>
+
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-widest">{{ q.floor?.name }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ q.service?.name }}</span>
+                                </div>
+                                <div class="text-6xl font-black text-white font-mono tracking-tighter">{{ q.full_number }}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Silakan Ke</div>
+                                <div class="text-2xl font-black text-blue-500 uppercase leading-none">{{ q.counter?.name }}</div>
+                            </div>
+                        </div>
+                    </transition-group>
+
+                    <!-- Empty State -->
+                    <div v-if="serving.length === 0" class="flex-1 flex flex-col items-center justify-center opacity-10 border-4 border-dashed border-slate-700/50 rounded-[3rem]">
+                        <span class="text-8xl mb-6">📢</span>
+                        <p class="text-lg font-black uppercase tracking-[0.5em] text-slate-400">Siap Melayani</p>
+                    </div>
                 </div>
             </div>
 

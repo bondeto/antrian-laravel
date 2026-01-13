@@ -92,7 +92,7 @@ class QueueController extends Controller
         $serving = Queue::whereIn('status', ['called', 'serving'])
             ->with(['counter', 'service', 'floor'])
             ->orderByDesc('called_at')
-            ->take(6)
+            ->take(5)
             ->get();
 
         return Inertia::render('Monitor/Lobby', [
