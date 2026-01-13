@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\SettingsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -47,6 +48,17 @@ class SettingController extends Controller
         Setting::set('monitor_header', $data['monitor_header'] ?? 'Pusat Antrian');
         Setting::set('monitor_subheader', $data['monitor_subheader'] ?? 'Lobby Utama');
 
-        return redirect()->back()->with('success', 'Pengaturan berhasil disimpan.');
+        // Broadcast settings update to all monitors
+        broadcast(new SettingsUpdated([
+            'media_type' => $data['media_type'],
+            'youtube_url' => $data['youtube_url'] ?? '',
+            'local_video_url' => $data['local_video_url'] ?? '',
+            'slideshow_urls' => $data['slideshow_urls'] ?? [],
+            'news_ticker' => $data['news_ticker'] ?? '',
+            'monitor_header' => $data['monitor_header'] ?? 'Pusat Antrian',
+            'monitor_subheader' => $data['monitor_subheader'] ?? 'Lobby Utama',
+        ]));
+
+        return redirect()->back()->with('success', 'Pengaturan berhasil disimpan. Monitor akan refresh otomatis.');
     }
 }

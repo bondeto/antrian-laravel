@@ -37,7 +37,7 @@ const isDuplicate = (eventType, queueId) => {
 onMounted(() => {
     console.log('[Monitor/Show] Mounted for floor:', props.floor?.id, props.floor?.name);
     
-    // Listen to changes
+    // Listen to queue changes
     window.Echo.channel(`monitor.floor.${props.floor.id}`)
         .listen('QueueCalled', (e) => {
             console.log('[Monitor/Show] QueueCalled event received:', e);
@@ -81,6 +81,14 @@ onMounted(() => {
                     console.log('[Monitor/Show] Removed queue from list:', queue.full_number);
                 }
             }
+        });
+    
+    // Listen for settings updates (remote refresh)
+    window.Echo.channel('settings')
+        .listen('.SettingsUpdated', (e) => {
+            console.log('[Monitor/Show] Settings updated, refreshing page...', e);
+            // Reload the page to apply new settings
+            window.location.reload();
         });
 });
 </script>

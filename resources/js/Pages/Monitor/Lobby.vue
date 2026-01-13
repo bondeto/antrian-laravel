@@ -90,6 +90,14 @@ onMounted(() => {
     } else {
         console.warn('[Lobby] No floors found! Cannot subscribe to any channels.');
     }
+    
+    // Listen for settings updates (remote refresh)
+    window.Echo.channel('settings')
+        .listen('.SettingsUpdated', (e) => {
+            console.log('[Lobby] Settings updated, refreshing page...', e);
+            // Reload the page to apply new settings
+            window.location.reload();
+        });
 });
 </script>
 
