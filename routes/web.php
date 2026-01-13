@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QueueController;
@@ -34,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/operator', [OperatorController::class, 'index'])->name('operator.index');
     Route::get('/operator/{counter}', [OperatorController::class, 'work'])->name('operator.work');
     Route::post('/operator/{counter}/call', [OperatorController::class, 'callNext'])->name('operator.call');
+
+    // ADMIN
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/reset', [AdminController::class, 'reset'])->name('admin.reset');
     
     // Actions on specific queue
     Route::post('/operator/queue/{queue}/recall', [OperatorController::class, 'recall'])->name('operator.recall');
