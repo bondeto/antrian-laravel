@@ -14,7 +14,14 @@ class OperatorController extends Controller
 {
     public function index()
     {
-        $floors = \App\Models\Floor::with('counters')->orderBy('level')->get()->map(function ($floor) {
+        $floors = \App\Models\Floor::with(['counters' => function($q) {
+            $q->with('activeQueue.service');
+        }])->orderBy('level')->get()->map(function ($floor) {
+            // Count waiting queues specifically for this floor
+            $floor->waiting_count = Queue::where('floor_id', $floor->id)
+                ->where('status', 'waiting')
+                ->count();
+
             // Ensure counters is a sequential array for JS
             $floor->setRelation('counters', $floor->counters->values());
             return $floor;
