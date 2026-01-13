@@ -1,10 +1,20 @@
 export function useQueueVoice() {
     const playAudio = (path) => {
+        console.log(`[QueueVoice] Playing: ${path}`);
         return new Promise((resolve, reject) => {
             const audio = new Audio(path);
-            audio.onended = resolve;
-            audio.onerror = reject;
-            audio.play().catch(reject);
+            audio.onended = () => {
+                console.log(`[QueueVoice] Finished: ${path}`);
+                resolve();
+            };
+            audio.onerror = (e) => {
+                console.error(`[QueueVoice] Error playing ${path}:`, e);
+                reject(e);
+            };
+            audio.play().catch(err => {
+                console.warn(`[QueueVoice] Autoplay blocked or failed for ${path}. Please interact with the page first.`, err);
+                reject(err);
+            });
         });
     };
 
@@ -48,15 +58,16 @@ export function useQueueVoice() {
     };
 
     const playQueueCall = async (queue) => {
+        console.log('[QueueVoice] Starting call sequence for:', queue.full_number);
         try {
-            const basePath = '/bandara';
+            const basePath = window.location.origin + '/bandara';
             const audioList = [];
 
             // 1. Nomor Antrean
             audioList.push(`${basePath}/frasa/nomor-antrean.wav`);
 
             // 2. Huruf (Layanan)
-            const prefix = queue.full_number.split('-')[0];
+            const prefix = queue.full_number.split('-')[0].toUpperCase();
             audioList.push(`${basePath}/huruf/${prefix}.wav`);
 
             // 3. Angka Nomor
@@ -74,7 +85,6 @@ export function useQueueVoice() {
             audioList.push(`${basePath}/frasa/silakan-menuju.wav`);
 
             // 5. Loket / Meja
-            // Try to detect if it's "Loket" or "Meja" from name or just use "Loket"
             audioList.push(`${basePath}/frasa/loket.wav`);
 
             // 6. Nomor Loket
@@ -96,9 +106,9 @@ export function useQueueVoice() {
             for (const audioPath of audioList) {
                 await playAudio(audioPath);
             }
+            console.log('[QueueVoice] Sequence completed.');
         } catch (error) {
-            console.error('Error playing queue voice:', error);
-            // Fallback to browser TTS if audio not found?
+            console.error('[QueueVoice] Critical Error in sequence:', error);
         }
     };
 
