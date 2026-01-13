@@ -141,7 +141,7 @@ onMounted(() => {
                 <div class="bg-red-600 px-4 py-1 font-bold text-sm rounded shadow-lg shadow-red-600/20 z-10 animate-pulse">BREAKING</div>
                 <div class="carousel-container overflow-hidden flex-1 relative h-6">
                     <div class="carousel-track whitespace-nowrap absolute animate-marquee font-medium text-slate-300">
-                        Selamat datang di Layanan Kami • Pastikan Anda telah mengambil nomor antrian sesuai layanan yang diinginkan • Budayakan antre untuk kenyamanan bersama • Jam operasional hari ini 08:00 - 15:30 WIB • Harap siapkan dokumen pendukung untuk mempercepat pelayanan.
+                        {{ mediaSettings.news_ticker }}
                     </div>
                 </div>
             </div>

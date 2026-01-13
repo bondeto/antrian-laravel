@@ -106,7 +106,7 @@ onMounted(() => {
         <!-- Footer -->
         <footer class="bg-blue-900 p-2 text-white overflow-hidden whitespace-nowrap">
             <div class="animate-marquee inline-block">
-                Selamat Datang di Kantor Kami. Budayakan Antre untuk Kenyamanan Bersama. Jam Operasional 08:00 - 16:00.
+                {{ mediaSettings.news_ticker }}
             </div>
         </footer>
     </div>

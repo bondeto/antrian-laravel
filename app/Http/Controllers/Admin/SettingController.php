@@ -17,6 +17,7 @@ class SettingController extends Controller
                 'youtube_url' => Setting::get('youtube_url', ''),
                 'slideshow_urls' => Setting::get('slideshow_urls', []), // array of urls
                 'local_video_url' => Setting::get('local_video_url', ''),
+                'news_ticker' => Setting::get('news_ticker', ''),
             ]
         ]);
     }
@@ -28,12 +29,14 @@ class SettingController extends Controller
             'youtube_url' => 'nullable|string',
             'local_video_url' => 'nullable|string',
             'slideshow_urls' => 'nullable|array',
+            'news_ticker' => 'nullable|string',
         ]);
 
         Setting::set('media_type', $data['media_type']);
         Setting::set('youtube_url', $data['youtube_url'] ?? '');
         Setting::set('local_video_url', $data['local_video_url'] ?? '');
         Setting::set('slideshow_urls', $data['slideshow_urls'] ?? [], 'json');
+        Setting::set('news_ticker', $data['news_ticker'] ?? '');
 
         return redirect()->back()->with('success', 'Pengaturan media berhasil disimpan.');
     }

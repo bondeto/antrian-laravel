@@ -81,6 +81,7 @@ class QueueController extends Controller
                 'youtube_url' => \App\Models\Setting::get('youtube_url', ''),
                 'local_video_url' => \App\Models\Setting::get('local_video_url', ''),
                 'slideshow_urls' => \App\Models\Setting::get('slideshow_urls', []),
+                'news_ticker' => \App\Models\Setting::get('news_ticker', 'Selamat Datang di Kantor Kami. Budayakan Antre untuk Kenyamanan Bersama.'),
             ]
         ]);
     }
@@ -102,6 +103,7 @@ class QueueController extends Controller
                 'youtube_url' => \App\Models\Setting::get('youtube_url', ''),
                 'local_video_url' => \App\Models\Setting::get('local_video_url', ''),
                 'slideshow_urls' => \App\Models\Setting::get('slideshow_urls', []),
+                'news_ticker' => \App\Models\Setting::get('news_ticker', 'Selamat datang di Layanan Kami. Budayakan antre untuk kenyamanan bersama.'),
             ]
         ]);
     }
