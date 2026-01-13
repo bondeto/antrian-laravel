@@ -13,9 +13,26 @@ const props = defineProps({
 });
 
 const { playQueueCall } = useQueueVoice();
-const serving = ref(props.initialServing);
-
+const serving = ref(props.initialServing || []);
 const lastCalled = ref(null);
+
+// Debounce mechanism to prevent duplicate events
+const recentlyProcessed = new Map();
+const DEBOUNCE_MS = 2000;
+
+const isDuplicate = (eventType, queueId) => {
+    const key = `${eventType}-${queueId}`;
+    const now = Date.now();
+    const lastTime = recentlyProcessed.get(key);
+    
+    if (lastTime && (now - lastTime) < DEBOUNCE_MS) {
+        console.log(`[Monitor/Show] Ignoring duplicate ${eventType} for queue ${queueId}`);
+        return true;
+    }
+    
+    recentlyProcessed.set(key, now);
+    return false;
+};
 
 onMounted(() => {
     console.log('[Monitor/Show] Mounted for floor:', props.floor?.id, props.floor?.name);
@@ -25,9 +42,13 @@ onMounted(() => {
         .listen('QueueCalled', (e) => {
             console.log('[Monitor/Show] QueueCalled event received:', e);
             const queue = e.queue;
+            
+            // Skip if duplicate event
+            if (isDuplicate('called', queue.id)) return;
+            
             lastCalled.value = queue;
             
-            // Remove existing entry if recalled (prevent duplicates)
+            // Remove existing entry if recalled (prevent duplicates in list)
             const existingIndex = serving.value.findIndex(q => q.id === queue.id);
             if (existingIndex !== -1) {
                 serving.value.splice(existingIndex, 1);
@@ -37,8 +58,7 @@ onMounted(() => {
             serving.value.unshift(queue);
             if (serving.value.length > 5) serving.value.pop();
 
-            // Play voice announcement using airport audio
-            console.log('[Monitor/Show] Playing voice for queue:', queue?.full_number);
+            // Play voice announcement
             playQueueCall(queue);
 
             // Clear overlay after 8s
@@ -49,6 +69,9 @@ onMounted(() => {
         .listen('QueueUpdated', (e) => {
             console.log('[Monitor/Show] QueueUpdated event received:', e);
             const queue = e.queue;
+            
+            // Skip if duplicate event
+            if (isDuplicate('updated', queue.id)) return;
             
             // If queue is served or skipped, remove from the list
             if (queue.status === 'served' || queue.status === 'skipped') {
