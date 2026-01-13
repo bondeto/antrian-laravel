@@ -27,6 +27,12 @@ onMounted(() => {
             const queue = e.queue;
             lastCalled.value = queue;
             
+            // Remove existing entry if recalled (prevent duplicates)
+            const existingIndex = serving.value.findIndex(q => q.id === queue.id);
+            if (existingIndex !== -1) {
+                serving.value.splice(existingIndex, 1);
+            }
+            
             // Add to top of serving list
             serving.value.unshift(queue);
             if (serving.value.length > 5) serving.value.pop();
