@@ -66,7 +66,7 @@ onMounted(() => {
             <!-- Right: Queue List -->
             <div class="w-1/3 bg-gray-800 border-l border-gray-700 flex flex-col">
                 <div class="p-4 bg-blue-900 text-center font-bold text-xl uppercase">Sedang Dilayani</div>
-                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="flex-1 overflow-hidden p-4 space-y-4">
                     <transition-group name="list" tag="div">
                         <div v-for="(q, index) in serving" :key="q.id" 
                             class="bg-white text-gray-900 p-6 rounded-lg shadow-lg flex justify-between items-center transform transition-all duration-500"

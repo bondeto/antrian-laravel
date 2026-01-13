@@ -32,7 +32,7 @@ onMounted(() => {
                     serving.value.splice(exists, 1);
                 }
                 serving.value.unshift(queue);
-                if (serving.value.length > 12) serving.value.pop();
+                if (serving.value.length > 6) serving.value.pop();
 
                 // Play voice announcement using airport audio
                 playQueueCall(queue);
@@ -76,7 +76,7 @@ onMounted(() => {
             </div>
 
             <!-- Right: Serving List -->
-            <div class="col-span-4 flex flex-col gap-4 overflow-y-auto">
+            <div class="col-span-4 flex flex-col gap-4 overflow-hidden">
                 <div class="text-xs font-black text-blue-400 uppercase tracking-[0.3em] mb-2 px-2 flex justify-between">
                     <span>Panggilan Aktif</span>
                     <span>Total: {{ serving.length }}</span>
