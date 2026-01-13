@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PromoMedia from '@/Components/PromoMedia.vue';
+import { useQueueVoice } from '@/Composables/useQueueVoice';
 
 const props = defineProps({
     floors: Array,
@@ -9,18 +10,10 @@ const props = defineProps({
     mediaSettings: Object,
 });
 
+const { playQueueCall } = useQueueVoice();
 const serving = ref(props.initialServing);
 const lastCalled = ref(null);
 const showOverlay = ref(false);
-
-const speak = (text) => {
-    if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'id-ID';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    }
-};
 
 onMounted(() => {
     // Listen for calls on ALL floors for the lobby
@@ -41,11 +34,8 @@ onMounted(() => {
                 serving.value.unshift(queue);
                 if (serving.value.length > 12) serving.value.pop();
 
-                // TTS
-                const counterName = queue.counter?.name || 'Loket';
-                const floorName = queue.floor?.name || 'Lantai';
-                const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${counterName}, di ${floorName}`;
-                speak(text);
+                // Play voice announcement using airport audio
+                playQueueCall(queue);
 
                 // Clear overlay after 10s
                 setTimeout(() => {

@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PromoMedia from '@/Components/PromoMedia.vue';
 
+import { useQueueVoice } from '@/Composables/useQueueVoice';
+
 const props = defineProps({
     floor: Object,
     initialServing: Array,
@@ -10,24 +12,10 @@ const props = defineProps({
     mediaSettings: Object,
 });
 
+const { playQueueCall } = useQueueVoice();
 const serving = ref(props.initialServing);
-// We might not show waiting list in detail, just stats?
-// Let's list active serving queues.
 
 const lastCalled = ref(null);
-
-const speak = (text) => {
-    if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'id-ID';
-        window.speechSynthesis.speak(utterance);
-    }
-};
-
-const playChime = () => {
-    // Ideally use an audio object. For now just TTS directly or simple beep if no file.
-    // let audio = new Audio('/chime.mp3'); audio.play();
-};
 
 onMounted(() => {
     // Listen to changes
@@ -40,13 +28,8 @@ onMounted(() => {
             serving.value.unshift(queue);
             if (serving.value.length > 5) serving.value.pop();
 
-            // Speak
-            // e.g. "Nomor Antrian A-001, Silakan ke Loket 1"
-            const counterName = queue.counter?.name || 'Loket';
-            const floorName = queue.floor?.name || props.floor.name;
-            const text = `Nomor Antrian ${queue.full_number.split('-').join(' ')}, Silakan ke ${counterName}`;
-            playChime();
-            setTimeout(() => speak(text), 1000);
+            // Play voice announcement using airport audio
+            playQueueCall(queue);
 
             // Clear overlay after 8s
             setTimeout(() => {
