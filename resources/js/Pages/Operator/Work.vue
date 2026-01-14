@@ -11,16 +11,37 @@ const props = defineProps({
 
 const isLoading = ref(false);
 const currentTime = ref(new Date());
+const liveStats = ref({ ...props.stats }); // Local reactive stats
 let timeInterval = null;
 
 onMounted(() => {
     timeInterval = setInterval(() => {
         currentTime.value = new Date();
     }, 1000);
+    
+    // Listen for new queue creation to update waiting count in real-time
+    if (window.Echo) {
+        window.Echo.channel(`monitor.floor.${props.counter.floor_id}`)
+            .listen('QueueCreated', (e) => {
+                console.log('[Operator] QueueCreated event received:', e);
+                if (e.stats) {
+                    liveStats.value = { ...liveStats.value, ...e.stats };
+                }
+            })
+            .listen('QueueUpdated', (e) => {
+                console.log('[Operator] QueueUpdated event received:', e);
+                if (e.stats) {
+                    liveStats.value = { ...liveStats.value, ...e.stats };
+                }
+            });
+    }
 });
 
 onUnmounted(() => {
     if (timeInterval) clearInterval(timeInterval);
+    if (window.Echo && props.counter) {
+        window.Echo.leave(`monitor.floor.${props.counter.floor_id}`);
+    }
 });
 
 const callNext = () => {
@@ -210,18 +231,18 @@ const formatDate = (date) => {
                     <!-- Stats Cards -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center">
-                            <div class="text-4xl font-black text-blue-400 font-mono mb-1">{{ stats.waiting }}</div>
+                            <div class="text-4xl font-black text-blue-400 font-mono mb-1">{{ liveStats.waiting }}</div>
                             <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Menunggu</div>
                             <div class="mt-3 w-full bg-slate-700 rounded-full h-1.5">
-                                <div class="bg-blue-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(stats.waiting * 10, 100)}%`"></div>
+                                <div class="bg-blue-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(liveStats.waiting * 10, 100)}%`"></div>
                             </div>
                         </div>
                         
                         <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center">
-                            <div class="text-4xl font-black text-emerald-400 font-mono mb-1">{{ stats.served }}</div>
+                            <div class="text-4xl font-black text-emerald-400 font-mono mb-1">{{ liveStats.served }}</div>
                             <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Selesai</div>
                             <div class="mt-3 w-full bg-slate-700 rounded-full h-1.5">
-                                <div class="bg-emerald-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(stats.served * 5, 100)}%`"></div>
+                                <div class="bg-emerald-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(liveStats.served * 5, 100)}%`"></div>
                             </div>
                         </div>
                     </div>

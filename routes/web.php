@@ -44,7 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::get('/counter-status', [AdminController::class, 'counterStatus'])->name('counter-status');
-        Route::post('/reset', [AdminController::class, 'reset'])->name('reset');
+        Route::post('/reset', [AdminController::class, 'resetDaily'])->name('reset'); // Default: daily reset
+        Route::post('/reset-all', [AdminController::class, 'resetAll'])->name('reset-all'); // Full reset
         
         // Management
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);

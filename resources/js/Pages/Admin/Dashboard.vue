@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import Layout from './Layout.vue';
 
@@ -7,16 +7,44 @@ const props = defineProps({
     stats: Object,
     services: Array,
     floors: Array,
-    activeServing: Array, // New prop for currently serving queues
+    activeServing: Array,
+    selectedDate: String,
 });
 
 const stats = ref(props.stats);
 const services = ref(props.services);
 const activeServing = ref(props.activeServing || []);
+const filterDate = ref(props.selectedDate || new Date().toISOString().split('T')[0]);
 
-const reset = () => {
-    if (confirm('PERINGATAN: Ini akan menghapus semua data antrian dan mereset nomor ke 0. Lanjutkan?')) {
+// Watch for props changes when filtering
+watch(() => props.stats, (newStats) => {
+    stats.value = newStats;
+}, { deep: true });
+
+const applyDateFilter = () => {
+    router.get('/admin/dashboard', { date: filterDate.value }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['stats', 'selectedDate'],
+    });
+};
+
+// Watch for date changes
+watch(filterDate, (newDate) => {
+    applyDateFilter();
+});
+
+const resetDaily = () => {
+    if (confirm('Reset harian akan:\n• Mereset nomor urut ke 0\n• Menghapus antrian yang belum selesai\n• Menyimpan histori antrian yang sudah selesai\n\nLanjutkan?')) {
         router.post('/admin/reset');
+    }
+};
+
+const resetAll = () => {
+    if (confirm('⚠️ PERINGATAN: Ini akan MENGHAPUS SEMUA DATA antrian termasuk histori!\n\nTindakan ini tidak dapat dibatalkan.\n\nAnda yakin?')) {
+        if (confirm('Konfirmasi sekali lagi: Hapus SEMUA data antrian?')) {
+            router.post('/admin/reset-all');
+        }
     }
 };
 
@@ -97,19 +125,34 @@ onMounted(() => {
         <div class="mb-8 flex justify-between items-end">
             <div>
                 <h2 class="text-3xl font-black text-slate-800 uppercase tracking-tight">Dashboard Overview</h2>
-                <p class="text-slate-500">Statistik real-time sistem antrian seluruh lantai.</p>
+                <p class="text-slate-500">Statistik sistem antrian seluruh lantai.</p>
             </div>
-            <button @click="reset" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all">
-                RESET SYSTEM
-            </button>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Filter Tanggal:</label>
+                    <input 
+                        type="date" 
+                        v-model="filterDate"
+                        class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </div>
+                <div class="flex gap-2">
+                    <button @click="resetDaily" class="bg-amber-50 text-amber-600 border border-amber-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-white transition-all" title="Reset nomor urut, hapus antrian pending, simpan histori">
+                        🔄 RESET HARIAN
+                    </button>
+                    <button @click="resetAll" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all" title="Hapus semua data antrian termasuk histori">
+                        🗑️ HAPUS SEMUA
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Antrian (Hari Ini)</div>
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Antrian</div>
                 <div class="text-4xl font-black text-slate-800">{{ stats.total }}</div>
-                <div class="mt-4 text-xs text-green-500 font-bold">Aktif</div>
+                <div class="mt-4 text-xs text-slate-400 font-bold">{{ filterDate }}</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Menunggu</div>
@@ -117,9 +160,14 @@ onMounted(() => {
                 <div class="mt-4 text-xs text-blue-400 font-bold">Waiting List</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai (Hari Ini)</div>
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai</div>
                 <div class="text-4xl font-black text-green-600">{{ stats.served }}</div>
-                <div class="mt-4 text-xs text-green-400 font-bold">Total Terlayani</div>
+                <div class="mt-4 text-xs text-green-400 font-bold">Terlayani</div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Dilewati</div>
+                <div class="text-4xl font-black text-amber-600">{{ stats.skipped || 0 }}</div>
+                <div class="mt-4 text-xs text-amber-400 font-bold">Skipped</div>
             </div>
         </div>
 
