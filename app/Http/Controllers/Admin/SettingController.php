@@ -56,7 +56,7 @@ class SettingController extends Controller
         
         // Save ticket features
         Setting::set('ticket_mode', $data['ticket_mode']);
-        Setting::set('enable_photo_capture', $data['enable_photo_capture'] ?? false, 'boolean');
+        Setting::set('enable_photo_capture', $data['enable_photo_capture'] ? '1' : '0', 'boolean');
 
         // Broadcast settings update to all monitors
         broadcast(new SettingsUpdated([
@@ -67,6 +67,8 @@ class SettingController extends Controller
             'news_ticker' => $data['news_ticker'] ?? '',
             'monitor_header' => $data['monitor_header'] ?? 'Pusat Antrian',
             'monitor_subheader' => $data['monitor_subheader'] ?? 'Lobby Utama',
+            'enable_photo_capture' => $data['enable_photo_capture'],
+            'ticket_mode' => $data['ticket_mode'],
         ]));
 
         return redirect()->back()->with('success', 'Pengaturan berhasil disimpan. Monitor akan refresh otomatis.');

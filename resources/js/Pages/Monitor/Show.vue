@@ -34,62 +34,71 @@ const isDuplicate = (eventType, queueId) => {
     return false;
 };
 
+const isAudioEnabled = ref(false);
+
+const enableAudio = () => {
+    isAudioEnabled.value = true;
+    const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A');
+    audio.play().catch(() => {});
+};
+
 onMounted(() => {
     console.log('[Monitor/Show] Mounted for floor:', props.floor?.id, props.floor?.name);
     
     // Listen to queue changes
     window.Echo.channel(`monitor.floor.${props.floor.id}`)
+        .listen('QueueReset', () => window.location.reload())
         .listen('QueueCalled', (e) => {
             console.log('[Monitor/Show] QueueCalled event received:', e);
             const queue = e.queue;
-            
-            // Skip if duplicate event
             if (isDuplicate('called', queue.id)) return;
             
             lastCalled.value = queue;
-            
-            // Remove existing entry if recalled (prevent duplicates in list)
             const existingIndex = serving.value.findIndex(q => q.id === queue.id);
-            if (existingIndex !== -1) {
-                serving.value.splice(existingIndex, 1);
-            }
-            
-            // Add to top of serving list
+            if (existingIndex !== -1) serving.value.splice(existingIndex, 1);
             serving.value.unshift(queue);
+            
+            // Ensure no duplicates
+            const seen = new Set();
+            serving.value = serving.value.filter(q => {
+                if (seen.has(q.id)) return false;
+                seen.add(q.id);
+                return true;
+            });
+            
             if (serving.value.length > 5) serving.value.pop();
 
-            // Play voice announcement
-            playQueueCall(queue);
+            // Play voice announcement if enabled
+            if (isAudioEnabled.value) {
+                playQueueCall(queue);
+            }
 
-            // Clear overlay after 8s
             setTimeout(() => {
                 lastCalled.value = null;
             }, 8000);
         })
         .listen('QueueUpdated', (e) => {
-            console.log('[Monitor/Show] QueueUpdated event received:', e);
             const queue = e.queue;
-            
-            // Skip if duplicate event
             if (isDuplicate('updated', queue.id)) return;
-            
-            // If queue is served or skipped, remove from the list
             if (queue.status === 'served' || queue.status === 'skipped') {
                 const index = serving.value.findIndex(q => q.id === queue.id);
-                if (index !== -1) {
-                    serving.value.splice(index, 1);
-                    console.log('[Monitor/Show] Removed queue from list:', queue.full_number);
-                }
+                if (index !== -1) serving.value.splice(index, 1);
             }
         });
     
-    // Listen for settings updates (remote refresh)
     window.Echo.channel('settings')
-        .listen('.SettingsUpdated', (e) => {
-            console.log('[Monitor/Show] Settings updated, refreshing page...', e);
-            // Reload the page to apply new settings
-            window.location.reload();
-        });
+        .listen('.SettingsUpdated', () => window.location.reload());
+
+    // Auto-enable audio on first click anywhere (transparently)
+    const handleFirstClick = () => {
+        enableAudio();
+        document.removeEventListener('click', handleFirstClick);
+        console.log('[Monitor] Audio unlocked via user interaction');
+    };
+    document.addEventListener('click', handleFirstClick);
+    
+    // Try to auto-play a tiny silent sound on mount
+    setTimeout(enableAudio, 1000);
 });
 </script>
 

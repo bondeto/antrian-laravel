@@ -24,17 +24,37 @@ onMounted(() => {
     window.Echo.channel('monitor.all')
         .listen('QueueCreated', (e) => {
             if (!e.queue) return;
-            stats.value.total++;
-            stats.value.waiting++;
-            const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
-            if (sIdx !== -1) services.value[sIdx].waiting_count++;
+            if (e.stats) {
+                stats.value.total = e.stats.total;
+                stats.value.waiting = e.stats.waiting;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else {
+                // Fallback if stats not provided
+                stats.value.total++;
+                stats.value.waiting++;
+                const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
+                if (sIdx !== -1) services.value[sIdx].waiting_count++;
+            }
         })
         .listen('QueueCalled', (e) => {
             if (!e.queue) return;
-            stats.value.waiting--;
-            const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
-            if (sIdx !== -1 && services.value[sIdx].waiting_count > 0) {
-                services.value[sIdx].waiting_count--;
+            if (e.stats) {
+                stats.value.waiting = e.stats.waiting;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else {
+                stats.value.waiting--;
+                const sIdx = services.value?.findIndex(s => s.id === e.queue.service_id) ?? -1;
+                if (sIdx !== -1 && services.value[sIdx].waiting_count > 0) {
+                    services.value[sIdx].waiting_count--;
+                }
             }
             
             // Add to active serving list (remove if exists first)
@@ -47,7 +67,15 @@ onMounted(() => {
         })
         .listen('QueueUpdated', (e) => {
             if (!e.queue) return;
-            if (e.queue.status === 'served') {
+            if (e.stats) {
+                stats.value.waiting = e.stats.waiting;
+                stats.value.served = e.stats.served;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else if (e.queue.status === 'served') {
                 stats.value.served++;
             }
             
@@ -79,9 +107,9 @@ onMounted(() => {
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Antrian</div>
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Antrian (Hari Ini)</div>
                 <div class="text-4xl font-black text-slate-800">{{ stats.total }}</div>
-                <div class="mt-4 text-xs text-green-500 font-bold">Hari Ini</div>
+                <div class="mt-4 text-xs text-green-500 font-bold">Aktif</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Menunggu</div>
@@ -89,7 +117,7 @@ onMounted(() => {
                 <div class="mt-4 text-xs text-blue-400 font-bold">Waiting List</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai</div>
+                <div class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Selesai (Hari Ini)</div>
                 <div class="text-4xl font-black text-green-600">{{ stats.served }}</div>
                 <div class="mt-4 text-xs text-green-400 font-bold">Total Terlayani</div>
             </div>

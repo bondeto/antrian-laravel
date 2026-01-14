@@ -31,7 +31,10 @@ const ticketData = ref(null);
 const qrCodeUrl = ref(null);
 
 // Check if photo capture is enabled
-const enablePhotoCapture = computed(() => props.ticketSettings?.enable_photo_capture || false);
+const enablePhotoCapture = computed(() => {
+    const val = props.ticketSettings?.enable_photo_capture;
+    return val === true || val === 1 || val === '1' || val === 'true';
+});
 const ticketMode = computed(() => props.ticketSettings?.ticket_mode || 'print');
 
 // Start camera
@@ -170,12 +173,7 @@ const proceedSubmit = (service_id) => {
 
 // Confirm photo and submit
 const confirmPhotoAndSubmit = () => {
-    if (!capturedPhoto.value) {
-        // Proceed without photo
-        proceedSubmit(selectedService.value);
-    } else {
-        proceedSubmit(selectedService.value);
-    }
+    proceedSubmit(selectedService.value);
 };
 
 onUnmounted(() => {

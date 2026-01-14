@@ -15,6 +15,8 @@ const serving = ref(props.initialServing || []);
 const lastCalled = ref(null);
 const showOverlay = ref(false);
 
+const isAudioEnabled = ref(false);
+
 // Debounce mechanism to prevent duplicate events
 const recentlyProcessed = new Map();
 const DEBOUNCE_MS = 2000;
@@ -33,71 +35,111 @@ const isDuplicate = (eventType, queueId) => {
     return false;
 };
 
+const enableAudio = () => {
+    isAudioEnabled.value = true;
+    // Play a silent sound to unlock audio context
+    const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8A');
+    audio.play().catch(() => {});
+};
+
 onMounted(() => {
     console.log('[Lobby] Mounted. Floors:', props.floors);
-    console.log('[Lobby] Initial Serving:', props.initialServing);
-    console.log('[Lobby] Media Settings:', props.mediaSettings);
+    
+    // Check if we already have interaction permission (not really possible reliably, so we use overlay)
+});
 
+// Watch for calls
+const handleQueueCall = (e) => {
+    console.log('[Lobby] QueueCalled event received:', e);
+    const queue = e.queue;
+    
+    // Skip if duplicate event
+    if (isDuplicate('called', queue.id)) return;
+    
+    // Overlay logic
+    lastCalled.value = queue;
+    showOverlay.value = true;
+    
+    // Update list (remove if exists first)
+    const exists = serving.value.findIndex(q => q.id === queue.id);
+    if (exists !== -1) {
+        serving.value.splice(exists, 1);
+    }
+    serving.value.unshift(queue);
+    
+    // Ensure no duplicates by keeping only first occurrence of each ID
+    const seen = new Set();
+    serving.value = serving.value.filter(q => {
+        if (seen.has(q.id)) return false;
+        seen.add(q.id);
+        return true;
+    });
+    
+    // Sync statistics if provided in event
+    if (e.stats) {
+        // We could use this to update something if needed, but Lobby is floor-specific usually
+    }
+    
+    if (serving.value.length > 5) serving.value.pop();
+
+    // Play voice announcement if audio enabled
+    if (isAudioEnabled.value) {
+        playQueueCall(queue);
+    }
+
+    // Clear overlay after 10s
+    setTimeout(() => {
+        showOverlay.value = false;
+    }, 10000);
+};
+
+// Handle queue status updates (served, skipped)
+const handleQueueUpdate = (e) => {
+    const queue = e.queue;
+    if (isDuplicate('updated', queue.id)) return;
+    console.log('[Lobby] Processing QueueUpdate - status:', queue.status);
+    if (queue.status === 'served' || queue.status === 'skipped') {
+        const index = serving.value.findIndex(q => q.id === queue.id);
+        console.log('[Lobby] Removing queue at index:', index);
+        if (index !== -1) serving.value.splice(index, 1);
+    }
+};
+
+onMounted(() => {
     // Listen for calls on ALL floors for the lobby
     if (props.floors && props.floors.length > 0) {
         props.floors.forEach(floor => {
             console.log(`[Lobby] Subscribing to channel: monitor.floor.${floor.id}`);
             window.Echo.channel(`monitor.floor.${floor.id}`)
-                .listen('QueueCalled', (e) => {
-                    console.log('[Lobby] QueueCalled event received:', e);
-                    const queue = e.queue;
-                    
-                    // Skip if duplicate event
-                    if (isDuplicate('called', queue.id)) return;
-                    
-                    // Overlay logic
-                    lastCalled.value = queue;
-                    showOverlay.value = true;
-                    
-                    // Update list (remove if exists first)
-                    const exists = serving.value.findIndex(q => q.id === queue.id);
-                    if (exists !== -1) {
-                        serving.value.splice(exists, 1);
-                    }
-                    serving.value.unshift(queue);
-                    if (serving.value.length > 5) serving.value.pop();
-
-                    // Play voice announcement
-                    playQueueCall(queue);
-
-                    // Clear overlay after 10s
-                    setTimeout(() => {
-                        showOverlay.value = false;
-                    }, 10000);
+                .listen('QueueCalled', handleQueueCall)
+                .listen('QueueReset', () => {
+                    console.log('[Lobby] Received QueueReset event. Reloading...');
+                    window.location.reload();
                 })
                 .listen('QueueUpdated', (e) => {
                     console.log('[Lobby] QueueUpdated event received:', e);
-                    const queue = e.queue;
-                    
-                    // Skip if duplicate event
-                    if (isDuplicate('updated', queue.id)) return;
-                    
-                    // If queue is served or skipped, remove from the list
-                    if (queue.status === 'served' || queue.status === 'skipped') {
-                        const index = serving.value.findIndex(q => q.id === queue.id);
-                        if (index !== -1) {
-                            serving.value.splice(index, 1);
-                            console.log('[Lobby] Removed queue from list:', queue.full_number);
-                        }
-                    }
+                    handleQueueUpdate(e);
+                })
+                .listen('.QueueUpdated', (e) => {
+                    console.log('[Lobby] .QueueUpdated event received (dot prefix):', e);
+                    handleQueueUpdate(e);
                 });
         });
-    } else {
-        console.warn('[Lobby] No floors found! Cannot subscribe to any channels.');
     }
     
-    // Listen for settings updates (remote refresh)
     window.Echo.channel('settings')
-        .listen('.SettingsUpdated', (e) => {
-            console.log('[Lobby] Settings updated, refreshing page...', e);
-            // Reload the page to apply new settings
-            window.location.reload();
-        });
+        .listen('.SettingsUpdated', () => window.location.reload());
+
+    // Auto-enable audio on first click anywhere (transparently)
+    const handleFirstClick = () => {
+        enableAudio();
+        document.removeEventListener('click', handleFirstClick);
+        console.log('[Lobby] Audio unlocked via user interaction');
+    };
+    document.addEventListener('click', handleFirstClick);
+    
+    // Try to auto-play a tiny silent sound on mount (might still fail but worth a try)
+    setTimeout(enableAudio, 1000);
 });
 </script>
 

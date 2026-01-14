@@ -18,22 +18,33 @@ onMounted(() => {
     // Listen to ALL events on one global channel for admin
     window.Echo.channel('monitor.all')
         .listen('QueueCreated', (e) => {
-            stats.value.total++;
-            stats.value.waiting++;
-            // Update specific service count
-            const sIdx = services.value.findIndex(s => s.id === e.queue.service_id);
-            if (sIdx !== -1) services.value[sIdx].waiting_count++;
+            if (e.stats) {
+                stats.value.total = e.stats.total;
+                stats.value.waiting = e.stats.waiting;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else {
+                stats.value.total++;
+                stats.value.waiting++;
+            }
         })
         .listen('QueueCalled', (e) => {
             const queue = e.queue;
             
-            // Decrement waiting
-            stats.value.waiting--;
+            if (e.stats) {
+                stats.value.waiting = e.stats.waiting;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else {
+                stats.value.waiting--;
+            }
             
-            // Update service waiting count
-            const sIdx = services.value.findIndex(s => s.id === queue.service_id);
-            if (sIdx !== -1) services.value[sIdx].waiting_count--;
-
             // Update counter status
             const cIdx = counters.value.findIndex(c => c.id === queue.counter_id);
             if (cIdx !== -1) {
@@ -43,7 +54,15 @@ onMounted(() => {
         .listen('QueueUpdated', (e) => {
             const queue = e.queue;
             
-            if (queue.status === 'served') {
+            if (e.stats) {
+                stats.value.waiting = e.stats.waiting;
+                stats.value.served = e.stats.served;
+                services.value.forEach(s => {
+                    if (e.stats.services[s.id] !== undefined) {
+                        s.waiting_count = e.stats.services[s.id];
+                    }
+                });
+            } else if (queue.status === 'served') {
                 stats.value.served++;
             }
 
@@ -70,7 +89,7 @@ onMounted(() => {
         <!-- Quick Stats Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-blue-600 p-4 rounded-xl text-white shadow-lg shadow-blue-200">
-                <div class="text-[10px] uppercase font-black opacity-80 mb-1">Total Antrian</div>
+                <div class="text-[10px] uppercase font-black opacity-80 mb-1">Total Hari Ini</div>
                 <div class="text-2xl font-black">{{ stats.total }}</div>
             </div>
             <div class="bg-indigo-600 p-4 rounded-xl text-white shadow-lg shadow-indigo-200">
@@ -78,7 +97,7 @@ onMounted(() => {
                 <div class="text-2xl font-black">{{ stats.waiting }}</div>
             </div>
             <div class="bg-emerald-600 p-4 rounded-xl text-white shadow-lg shadow-emerald-200">
-                <div class="text-[10px] uppercase font-black opacity-80 mb-1">Telah Dilayani</div>
+                <div class="text-[10px] uppercase font-black opacity-80 mb-1">Selesai Hari Ini</div>
                 <div class="text-2xl font-black">{{ stats.served }}</div>
             </div>
         </div>

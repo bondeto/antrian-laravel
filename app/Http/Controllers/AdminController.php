@@ -14,9 +14,9 @@ class AdminController extends Controller
     public function index()
     {
         $stats = [
-            'total' => Queue::count(),
+            'total' => Queue::whereDate('created_at', now()->toDateString())->count(),
             'waiting' => Queue::where('status', 'waiting')->count(),
-            'served' => Queue::where('status', 'served')->count(),
+            'served' => Queue::whereDate('created_at', now()->toDateString())->where('status', 'served')->count(),
         ];
         $services = Service::withCount(['queues as waiting_count' => function($query) {
             $query->where('status', 'waiting');
@@ -44,9 +44,9 @@ class AdminController extends Controller
         $floors = Floor::all();
         // We reuse stats if needed, or just focus on counters
         $stats = [
-            'total' => Queue::count(),
+            'total' => Queue::whereDate('created_at', now()->toDateString())->count(),
             'waiting' => Queue::where('status', 'waiting')->count(),
-            'served' => Queue::where('status', 'served')->count(),
+            'served' => Queue::whereDate('created_at', now()->toDateString())->where('status', 'served')->count(),
         ];
         $services = Service::all();
 
@@ -63,6 +63,8 @@ class AdminController extends Controller
         // Reset last_number in services and truncate queues
         Service::query()->update(['last_number' => 0]);
         Queue::truncate();
+        
+        broadcast(new \App\Events\QueueReset());
 
         return redirect()->back()->with('success', 'Sistem antrian telah di-reset.');
     }
