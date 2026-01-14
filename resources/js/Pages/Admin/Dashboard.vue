@@ -136,14 +136,9 @@ onMounted(() => {
                         class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                 </div>
-                <div class="flex gap-2">
-                    <button @click="resetDaily" class="bg-amber-50 text-amber-600 border border-amber-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-white transition-all" title="Reset nomor urut, hapus antrian pending, simpan histori">
-                        🔄 RESET HARIAN
-                    </button>
-                    <button @click="resetAll" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all" title="Hapus semua data antrian termasuk histori">
-                        🗑️ HAPUS SEMUA
-                    </button>
-                </div>
+                <button @click="resetDaily" class="bg-amber-50 text-amber-600 border border-amber-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-500 hover:text-white transition-all" title="Reset nomor urut, hapus antrian pending, simpan histori">
+                    🔄 RESET HARIAN
+                </button>
             </div>
         </div>
 
