@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\QueueCalled;
+use App\Events\QueueUpdated;
 use App\Models\Counter;
 use App\Models\Queue;
 use App\Models\Service;
@@ -51,11 +52,24 @@ class OperatorController extends Controller
 
     public function callNext(Request $request, Counter $counter)
     {
-        $queue = DB::transaction(function () use ($counter) {
+        // Get old active queues to auto-serve
+        $oldQueues = Queue::where('counter_id', $counter->id)
+            ->whereIn('status', ['called', 'serving'])
+            ->get();
+
+        $queue = DB::transaction(function () use ($counter, $oldQueues) {
+            // Auto-serve old queue(s)
+            foreach ($oldQueues as $oldQueue) {
+                $oldQueue->update([
+                    'status' => 'served',
+                    'served_at' => now()
+                ]);
+            }
+
             // Find oldest waiting queue for this floor 
             $next = Queue::where('floor_id', $counter->floor_id)
                 ->where('status', 'waiting')
-                ->orderBy('created_at', 'asc') // Use created_at for flexible re-queueing
+                ->orderBy('created_at', 'asc')
                 ->orderBy('id', 'asc')
                 ->lockForUpdate()
                 ->first();
@@ -70,6 +84,11 @@ class OperatorController extends Controller
             
             return $next;
         });
+
+        // Broadcast status update for old queues so monitors remove them
+        foreach ($oldQueues as $oldQueue) {
+            broadcast(new QueueUpdated($oldQueue->fresh()->load(['counter', 'floor', 'service'])));
+        }
 
         if ($queue) {
             $queue->load(['floor', 'counter', 'service']);

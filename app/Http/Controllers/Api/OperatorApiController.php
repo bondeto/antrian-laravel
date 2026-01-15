@@ -53,11 +53,19 @@ class OperatorApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Tidak ada antrian menunggu.']);
         }
 
-        DB::transaction(function () use ($nextQueue, $counter) {
-            // Update old active queue if any
-            Queue::where('counter_id', $counter->id)
-                ->whereIn('status', ['called', 'serving'])
-                ->update(['status' => 'served']);
+        // Get old active queues to broadcast their status change
+        $oldQueues = Queue::where('counter_id', $counter->id)
+            ->whereIn('status', ['called', 'serving'])
+            ->get();
+
+        DB::transaction(function () use ($nextQueue, $counter, $oldQueues) {
+            // Update old active queue if any - mark as served
+            foreach ($oldQueues as $oldQueue) {
+                $oldQueue->update([
+                    'status' => 'served',
+                    'served_at' => now()
+                ]);
+            }
 
             $nextQueue->update([
                 'counter_id' => $counter->id,
@@ -65,6 +73,11 @@ class OperatorApiController extends Controller
                 'called_at' => now(),
             ]);
         });
+
+        // Broadcast status update for old queues so monitors remove them
+        foreach ($oldQueues as $oldQueue) {
+            broadcast(new QueueUpdated($oldQueue->fresh()->load(['counter', 'floor', 'service'])));
+        }
 
         broadcast(new QueueCalled($nextQueue->load(['counter', 'floor', 'service'])))->toOthers();
 
