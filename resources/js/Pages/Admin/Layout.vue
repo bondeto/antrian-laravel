@@ -22,9 +22,12 @@ const navItems = [
     <div class="h-screen bg-slate-100 flex overflow-hidden font-sans">
         <!-- Sidebar -->
         <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 shadow-xl overflow-y-auto">
-            <div class="p-6 bg-blue-600 sticky top-0 z-10">
-                <h1 class="text-xl font-black tracking-tighter italic">ADMIN PANEL</h1>
-                <p class="text-xs text-blue-100 opacity-70">Antrian System v1.0</p>
+            <div class="p-6 bg-blue-600 sticky top-0 z-10 flex items-center gap-3">
+                <img v-if="$page.props.app_settings?.logo_url" :src="$page.props.app_settings.logo_url" alt="Logo" class="h-10 w-10 object-contain bg-white rounded-lg p-1 shadow-md" />
+                <div>
+                    <h1 class="text-xl font-black tracking-tighter italic">ADMIN PANEL</h1>
+                    <p class="text-xs text-blue-100 opacity-70">Antrian System v1.0</p>
+                </div>
             </div>
             
             <nav class="flex-1 p-4 space-y-1">

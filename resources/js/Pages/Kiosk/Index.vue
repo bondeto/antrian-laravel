@@ -184,6 +184,7 @@ onUnmounted(() => {
 <template>
     <Head title="Ambil Antrian" />
     <div class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-8 flex flex-col items-center justify-center">
+        <img v-if="$page.props.app_settings?.logo_url" :src="$page.props.app_settings.logo_url" alt="Logo" class="h-24 w-auto object-contain mb-6 drop-shadow-xl" />
         <h1 class="font-black mb-2 text-slate-800 uppercase tracking-tight fluid-kiosk-title">Silakan Pilih Layanan</h1>
         <p class="text-slate-500 mb-8 fluid-kiosk-subtitle">Pilih layanan yang Anda butuhkan untuk mendapatkan nomor antrian</p>
 

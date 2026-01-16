@@ -14,7 +14,8 @@ import { Link } from '@inertiajs/vue3';
         <div class="w-full sm:max-w-md mt-6 px-8 py-10 bg-white shadow-2xl overflow-hidden sm:rounded-3xl border border-gray-100 relative z-10 transition-all duration-300 hover:shadow-blue-900/5">
             <div class="flex justify-center mb-8">
                 <Link href="/">
-                    <ApplicationLogo class="w-20 h-20 fill-current text-blue-600 scale-110" />
+                    <img v-if="$page.props.app_settings?.logo_url" :src="$page.props.app_settings.logo_url" alt="Logo" class="w-20 h-20 object-contain drop-shadow-md" />
+                    <ApplicationLogo v-else class="w-20 h-20 fill-current text-blue-600 scale-110" />
                 </Link>
             </div>
             

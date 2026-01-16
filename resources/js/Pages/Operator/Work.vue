@@ -99,7 +99,10 @@ const formatDate = (date) => {
         <!-- Header -->
         <header class="bg-white/5 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
+                <div v-if="$page.props.app_settings?.logo_url" class="h-12 w-12 bg-white p-1 rounded-xl shadow-lg ring-1 ring-white/10">
+                    <img :src="$page.props.app_settings.logo_url" alt="Logo" class="h-full w-full object-contain" />
+                </div>
+                <div v-else class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
                     <span class="text-2xl">🖥️</span>
                 </div>
                 <div>

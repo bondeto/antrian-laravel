@@ -22,6 +22,8 @@ class SettingController extends Controller
                 'skip_handling' => Setting::get('skip_handling', 'hangus'),
                 'monitor_header' => Setting::get('monitor_header', 'Pusat Antrian'),
                 'monitor_subheader' => Setting::get('monitor_subheader', 'Lobby Utama'),
+                'app_logo' => Setting::get('app_logo', null),
+                'app_logo_url' => Setting::get('app_logo') ? asset('storage/' . Setting::get('app_logo')) : null,
                 // Ticket features
                 'ticket_mode' => Setting::get('ticket_mode', 'print'), // print, paperless
                 'enable_photo_capture' => Setting::get('enable_photo_capture', false),
@@ -40,10 +42,16 @@ class SettingController extends Controller
             'skip_handling' => 'required|in:hangus,belakang,pindah_1,pindah_2',
             'monitor_header' => 'nullable|string|max:100',
             'monitor_subheader' => 'nullable|string|max:100',
+            'app_logo' => 'nullable|image|max:2048', // 2MB max
             // Ticket features
             'ticket_mode' => 'required|in:print,paperless',
             'enable_photo_capture' => 'boolean',
         ]);
+
+        if ($request->hasFile('app_logo')) {
+            $path = $request->file('app_logo')->store('logos', 'public');
+            Setting::set('app_logo', $path);
+        }
 
         Setting::set('media_type', $data['media_type']);
         Setting::set('youtube_url', $data['youtube_url'] ?? '');
@@ -69,6 +77,7 @@ class SettingController extends Controller
             'monitor_subheader' => $data['monitor_subheader'] ?? 'Lobby Utama',
             'enable_photo_capture' => $data['enable_photo_capture'],
             'ticket_mode' => $data['ticket_mode'],
+            'app_logo_url' => Setting::get('app_logo') ? asset('storage/' . Setting::get('app_logo')) : null,
         ]));
 
         return redirect()->back()->with('success', 'Pengaturan berhasil disimpan. Monitor akan refresh otomatis.');

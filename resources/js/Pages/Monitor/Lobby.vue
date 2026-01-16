@@ -149,7 +149,10 @@ onMounted(() => {
         <!-- Header -->
         <header class="bg-slate-900/50 backdrop-blur-md p-6 shadow-2xl flex justify-between items-center border-b border-white/5 relative z-10">
             <div class="flex items-center gap-4">
-                <div class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
+                <div v-if="mediaSettings.logo_url" class="h-16 w-16 bg-white p-2 rounded-2xl shadow-lg ring-1 ring-white/20">
+                    <img :src="mediaSettings.logo_url" alt="Logo" class="h-full w-full object-contain" />
+                </div>
+                <div v-else class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20">
                     <span class="text-3xl">🏛️</span>
                 </div>
                 <div>

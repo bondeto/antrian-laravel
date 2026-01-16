@@ -19,6 +19,7 @@ const form = useForm({
     // Ticket settings
     ticket_mode: props.settings.ticket_mode || 'print',
     enable_photo_capture: props.settings.enable_photo_capture || false,
+    app_logo: null,
 });
 
 const newImageUrl = ref('');
@@ -35,7 +36,21 @@ const removeImageUrl = (index) => {
 };
 
 const submit = () => {
-    form.post('/admin/settings');
+    form.post('/admin/settings', {
+        forceFormData: true,
+        onSuccess: () => {
+            form.app_logo = null;
+        }
+    });
+};
+
+const logoPreview = ref(props.settings.app_logo_url);
+const onLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        form.app_logo = file;
+        logoPreview.value = URL.createObjectURL(file);
+    }
 };
 </script>
 
@@ -115,19 +130,40 @@ const submit = () => {
                 <p class="text-[10px] text-slate-400">Teks ini akan muncul di footer monitor antrian.</p>
             </div>
 
-            <!-- Monitor Display Customization -->
-            <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Tampilan Header Monitor</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Header Utama</label>
-                        <input v-model="form.monitor_header" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Pusat Antrian" />
-                        <p class="text-[10px] text-slate-400 mt-1">Nama utama yang muncul di header monitor</p>
+            <!-- Logo & Monitor Display Customization -->
+            <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest">Identitas & Tampilan</label>
+                
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <!-- Logo Upload -->
+                    <div class="w-full md:w-1/3">
+                        <label class="block text-xs font-bold text-slate-500 mb-2">Logo Instansi</label>
+                        <div class="relative group aspect-square max-w-[200px] bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden hover:border-blue-400 transition-colors cursor-pointer" @click="$refs.logoInput.click()">
+                            <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-contain p-4" />
+                            <div v-else class="text-center p-4">
+                                <span class="text-3xl mb-2 block">🏢</span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase">Klik Upload Logo</span>
+                            </div>
+                            <div class="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span class="bg-white text-blue-600 px-3 py-1 rounded-full text-[10px] font-black shadow-lg">GANTI LOGO</span>
+                            </div>
+                        </div>
+                        <input type="file" ref="logoInput" class="hidden" @change="onLogoChange" accept="image/*" />
+                        <p class="text-[10px] text-slate-400 mt-2">Format: JPG, PNG. Maks: 2MB.</p>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Sub-Header</label>
-                        <input v-model="form.monitor_subheader" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Lobby Utama" />
-                        <p class="text-[10px] text-slate-400 mt-1">Keterangan tambahan di bawah header</p>
+
+                    <!-- Header Text -->
+                    <div class="flex-1 space-y-4 w-full">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Header Utama</label>
+                            <input v-model="form.monitor_header" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Pusat Antrian" />
+                            <p class="text-[10px] text-slate-400 mt-1">Nama utama yang muncul di header monitor</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Sub-Header</label>
+                            <input v-model="form.monitor_subheader" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500" placeholder="Lobby Utama" />
+                            <p class="text-[10px] text-slate-400 mt-1">Keterangan tambahan di bawah header</p>
+                        </div>
                     </div>
                 </div>
             </div>

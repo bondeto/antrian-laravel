@@ -165,6 +165,7 @@ class QueueController extends Controller
                 'news_ticker' => \App\Models\Setting::get('news_ticker', 'Selamat Datang di Kantor Kami. Budayakan Antre untuk Kenyamanan Bersama.'),
                 'monitor_header' => \App\Models\Setting::get('monitor_header', 'Pusat Antrian'),
                 'monitor_subheader' => \App\Models\Setting::get('monitor_subheader', 'Lobby Utama'),
+                'logo_url' => \App\Models\Setting::get('app_logo') ? asset('storage/' . \App\Models\Setting::get('app_logo')) : null,
             ]
         ]);
     }
@@ -189,6 +190,7 @@ class QueueController extends Controller
                 'news_ticker' => \App\Models\Setting::get('news_ticker', 'Selamat datang di Layanan Kami. Budayakan antre untuk kenyamanan bersama.'),
                 'monitor_header' => \App\Models\Setting::get('monitor_header', 'Pusat Antrian'),
                 'monitor_subheader' => \App\Models\Setting::get('monitor_subheader', 'Lobby Utama'),
+                'logo_url' => \App\Models\Setting::get('app_logo') ? asset('storage/' . \App\Models\Setting::get('app_logo')) : null,
             ]
         ]);
     }

@@ -106,7 +106,8 @@ onMounted(() => {
     <Head :title="`Monitor - ${floor.name}`" />
     <div class="min-h-screen bg-gray-900 text-white overflow-hidden flex flex-col">
         <!-- Header -->
-        <header class="bg-blue-800 p-4 shadow-lg text-center z-10">
+        <header class="bg-blue-800 p-4 shadow-lg flex items-center justify-center gap-4 z-10">
+            <img v-if="mediaSettings.logo_url" :src="mediaSettings.logo_url" alt="Logo" class="h-12 w-12 object-contain bg-white rounded-lg p-1 shadow-md" />
             <h1 class="font-bold tracking-wider fluid-header">{{ floor.name }} - {{ mediaSettings.monitor_header || 'ANTREAN KANTOR' }}</h1>
         </header>
 
