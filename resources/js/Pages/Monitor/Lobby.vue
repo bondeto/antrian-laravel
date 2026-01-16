@@ -153,16 +153,16 @@ onMounted(() => {
                     <span class="text-3xl">🏛️</span>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-1">{{ mediaSettings.monitor_header || 'Pusat Antrian' }}</h1>
-                    <p class="text-blue-400 text-[10px] font-black tracking-[0.3em] uppercase opacity-70">{{ mediaSettings.monitor_subheader || 'Lobby Utama' }} • {{ floors.length }} Lantai Terintegrasi</p>
+                    <h1 class="font-black tracking-tighter uppercase leading-none mb-1 fluid-header">{{ mediaSettings.monitor_header || 'Pusat Antrian' }}</h1>
+                    <p class="text-blue-400 font-black tracking-[0.3em] uppercase opacity-70 fluid-subheader">{{ mediaSettings.monitor_subheader || 'Lobby Utama' }} • {{ floors.length }} Lantai Terintegrasi</p>
                 </div>
             </div>
             <div class="flex items-center gap-8">
                 <div class="text-right">
-                    <div class="text-4xl font-mono font-black text-white" id="clock">
+                    <div class="font-mono font-black text-white fluid-clock" id="clock">
                         {{ new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}
                     </div>
-                    <div class="text-slate-400 text-[10px] font-black uppercase tracking-widest">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }) }}</div>
+                    <div class="text-slate-400 font-black uppercase tracking-widest fluid-date">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }) }}</div>
                 </div>
             </div>
         </header>
@@ -180,9 +180,9 @@ onMounted(() => {
                 <div class="flex items-center justify-between px-4">
                     <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                        <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Panggilan Aktif</h2>
+                        <h2 class="font-black text-slate-400 uppercase tracking-[0.4em] fluid-label">Panggilan Aktif</h2>
                     </div>
-                    <div class="bg-slate-800/50 px-3 py-1 rounded-full text-[10px] font-black text-slate-500 border border-white/5 uppercase">5 Terakhir</div>
+                    <div class="bg-slate-800/50 px-3 py-1 rounded-full font-black text-slate-500 border border-white/5 uppercase fluid-badge">5 Terakhir</div>
                 </div>
 
                 <div class="flex-1 flex flex-col gap-4">
@@ -196,22 +196,22 @@ onMounted(() => {
 
                             <div class="flex flex-col gap-1">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-widest">{{ q.floor?.name }}</span>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ q.service?.name }}</span>
+                                    <span class="font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-widest fluid-tag">{{ q.floor?.name }}</span>
+                                    <span class="font-black text-slate-500 uppercase tracking-widest fluid-tag">{{ q.service?.name }}</span>
                                 </div>
-                                <div class="text-6xl font-black text-white font-mono tracking-tighter">{{ q.full_number }}</div>
+                                <div class="font-black text-white font-mono tracking-tighter fluid-queue-number">{{ q.full_number }}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Silakan Ke</div>
-                                <div class="text-2xl font-black text-blue-500 uppercase leading-none">{{ q.counter?.name }}</div>
+                                <div class="font-black text-slate-500 uppercase tracking-[0.2em] mb-1 fluid-tag">Silakan Ke</div>
+                                <div class="font-black text-blue-500 uppercase leading-none fluid-counter">{{ q.counter?.name }}</div>
                             </div>
                         </div>
                     </transition-group>
 
                     <!-- Empty State -->
                     <div v-if="serving.length === 0" class="flex-1 flex flex-col items-center justify-center opacity-10 border-4 border-dashed border-slate-700/50 rounded-[3rem]">
-                        <span class="text-8xl mb-6">📢</span>
-                        <p class="text-lg font-black uppercase tracking-[0.5em] text-slate-400">Siap Melayani</p>
+                        <span class="fluid-emoji mb-6">📢</span>
+                        <p class="font-black uppercase tracking-[0.5em] text-slate-400 fluid-empty-text">Siap Melayani</p>
                     </div>
                 </div>
             </div>
@@ -221,13 +221,13 @@ onMounted(() => {
                 <div v-if="showOverlay && lastCalled" class="fixed inset-0 z-50 flex items-center justify-center p-10 bg-black/90 backdrop-blur-xl">
                     <div class="bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 p-1 rounded-3xl shadow-[0_0_100px_rgba(37,99,235,0.4)] animate-call">
                         <div class="bg-slate-900 rounded-[calc(1.5rem-2px)] p-16 text-center">
-                            <div class="text-blue-400 font-black tracking-[0.5em] uppercase mb-8 animate-pulse text-2xl">Panggilan Antrian</div>
-                            <div class="text-[15rem] leading-none font-black text-white mb-10 drop-shadow-[0_20px_50px_rgba(255,255,255,0.2)] font-mono">
+                            <div class="text-blue-400 font-black tracking-[0.5em] uppercase mb-8 animate-pulse fluid-overlay-title">Panggilan Antrian</div>
+                            <div class="leading-none font-black text-white mb-10 drop-shadow-[0_20px_50px_rgba(255,255,255,0.2)] font-mono fluid-overlay-number">
                                 {{ lastCalled.full_number }}
                             </div>
                             <div class="flex flex-col gap-2">
-                                <div class="text-6xl text-blue-200 font-bold uppercase tracking-tight">Menuju {{ lastCalled.counter?.name }}</div>
-                                <div class="text-3xl text-blue-400 font-medium uppercase tracking-[0.2em] mt-4">{{ lastCalled.floor?.name }}</div>
+                                <div class="text-blue-200 font-bold uppercase tracking-tight fluid-overlay-counter">Menuju {{ lastCalled.counter?.name }}</div>
+                                <div class="text-blue-400 font-medium uppercase tracking-[0.2em] mt-4 fluid-overlay-floor">{{ lastCalled.floor?.name }}</div>
                             </div>
                         </div>
                     </div>
@@ -250,6 +250,61 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* ===== FLUID TYPOGRAPHY WITH CLAMP ===== */
+/* Header Section */
+.fluid-header {
+    font-size: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+}
+.fluid-subheader {
+    font-size: clamp(0.5rem, 0.8vw, 0.75rem);
+}
+.fluid-clock {
+    font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+}
+.fluid-date {
+    font-size: clamp(0.5rem, 0.8vw, 0.75rem);
+}
+
+/* Queue List Section */
+.fluid-label {
+    font-size: clamp(0.6rem, 1vw, 0.875rem);
+}
+.fluid-badge {
+    font-size: clamp(0.5rem, 0.8vw, 0.625rem);
+}
+.fluid-tag {
+    font-size: clamp(0.5rem, 0.7vw, 0.625rem);
+}
+.fluid-queue-number {
+    font-size: clamp(2rem, 4vw + 1rem, 4rem);
+}
+.fluid-counter {
+    font-size: clamp(1rem, 1.8vw + 0.5rem, 1.5rem);
+}
+
+/* Empty State */
+.fluid-emoji {
+    font-size: clamp(4rem, 6vw + 2rem, 8rem);
+}
+.fluid-empty-text {
+    font-size: clamp(0.875rem, 1.2vw, 1.125rem);
+}
+
+/* Overlay Section */
+.fluid-overlay-title {
+    font-size: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+}
+.fluid-overlay-number {
+    font-size: clamp(6rem, 12vw + 3rem, 15rem);
+}
+.fluid-overlay-counter {
+    font-size: clamp(2rem, 4vw + 1rem, 4rem);
+}
+.fluid-overlay-floor {
+    font-size: clamp(1.25rem, 2vw + 0.5rem, 2rem);
+}
+
+/* ===== ANIMATIONS ===== */
 .animate-marquee {
     display: inline-block;
     padding-left: 100%;

@@ -184,12 +184,12 @@ onUnmounted(() => {
 <template>
     <Head title="Ambil Antrian" />
     <div class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-8 flex flex-col items-center justify-center">
-        <h1 class="text-4xl font-black mb-2 text-slate-800 uppercase tracking-tight">Silakan Pilih Layanan</h1>
-        <p class="text-slate-500 mb-8 text-sm">Pilih layanan yang Anda butuhkan untuk mendapatkan nomor antrian</p>
+        <h1 class="font-black mb-2 text-slate-800 uppercase tracking-tight fluid-kiosk-title">Silakan Pilih Layanan</h1>
+        <p class="text-slate-500 mb-8 fluid-kiosk-subtitle">Pilih layanan yang Anda butuhkan untuk mendapatkan nomor antrian</p>
 
         <div v-for="floor in floors" :key="floor.id" class="mb-8 w-full max-w-4xl">
-            <h2 class="text-2xl font-bold mb-4 text-slate-700 border-b border-slate-200 pb-2 flex items-center gap-2">
-                <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-sm font-black">{{ floor.name }}</span>
+            <h2 class="font-bold mb-4 text-slate-700 border-b border-slate-200 pb-2 flex items-center gap-2">
+                <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg font-black fluid-floor-tag">{{ floor.name }}</span>
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <button 
@@ -202,8 +202,8 @@ onUnmounted(() => {
                     <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-100 transition-colors"></div>
                     <div class="relative z-10">
                         <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🎫</div>
-                        <div class="text-2xl font-black text-slate-800">{{ service.name }}</div>
-                        <div class="text-slate-500 mt-2 bg-slate-100 px-3 py-1 rounded-lg text-sm font-bold">Kode: {{ service.code }}</div>
+                        <div class="font-black text-slate-800 fluid-service-name">{{ service.name }}</div>
+                        <div class="text-slate-500 mt-2 bg-slate-100 px-3 py-1 rounded-lg font-bold fluid-service-code">Kode: {{ service.code }}</div>
                     </div>
                 </button>
             </div>
@@ -307,11 +307,11 @@ onUnmounted(() => {
                 <div v-if="ticketMode === 'paperless' && ticketData" class="space-y-6">
                     <div class="text-green-500 text-5xl">✅</div>
                     <div>
-                        <p class="text-slate-500 text-sm uppercase tracking-widest font-bold mb-2">Nomor Antrian Anda</p>
-                        <div class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 my-4">
+                        <p class="text-slate-500 uppercase tracking-widest font-bold mb-2 fluid-ticket-label">Nomor Antrian Anda</p>
+                        <div class="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 my-4 fluid-ticket-number">
                             {{ ticketData.full_number }}
                         </div>
-                        <div class="text-slate-500 text-sm mb-4">{{ ticketData.service_name }}</div>
+                        <div class="text-slate-500 mb-4 fluid-ticket-service">{{ ticketData.service_name }}</div>
                     </div>
                     
                     <!-- QR Code -->
@@ -342,6 +342,32 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* ===== FLUID TYPOGRAPHY WITH CLAMP ===== */
+.fluid-kiosk-title {
+    font-size: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
+}
+.fluid-kiosk-subtitle {
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+.fluid-floor-tag {
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+.fluid-service-name {
+    font-size: clamp(1.25rem, 2vw + 0.25rem, 1.5rem);
+}
+.fluid-service-code {
+    font-size: clamp(0.625rem, 0.8vw, 0.75rem);
+}
+.fluid-ticket-label {
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+.fluid-ticket-number {
+    font-size: clamp(3rem, 6vw + 1rem, 5rem);
+}
+.fluid-ticket-service {
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+
 .animate-bounce-in {
     animation: bounce-in 0.5s;
 }

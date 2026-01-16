@@ -107,7 +107,7 @@ onMounted(() => {
     <div class="min-h-screen bg-gray-900 text-white overflow-hidden flex flex-col">
         <!-- Header -->
         <header class="bg-blue-800 p-4 shadow-lg text-center z-10">
-            <h1 class="text-3xl font-bold tracking-wider">{{ floor.name }} - {{ mediaSettings.monitor_header || 'ANTREAN KANTOR' }}</h1>
+            <h1 class="font-bold tracking-wider fluid-header">{{ floor.name }} - {{ mediaSettings.monitor_header || 'ANTREAN KANTOR' }}</h1>
         </header>
 
         <!-- Main Content -->
@@ -119,16 +119,16 @@ onMounted(() => {
                 <!-- Popup Overlay for Last Called -->
                 <div v-if="lastCalled" key="lastCalled.id" class="absolute inset-0 flex items-center justify-center bg-black/80 z-20 animate-pulse">
                     <div class="text-center border-4 border-yellow-400 p-10 rounded-xl bg-blue-900">
-                        <div class="text-4xl text-yellow-400 mb-2">PANGGILAN</div>
-                        <div class="text-9xl font-black text-white mb-4">{{ lastCalled.full_number }}</div>
-                        <div class="text-5xl text-white">KE {{ lastCalled.counter?.name }}</div>
+                        <div class="text-yellow-400 mb-2 fluid-overlay-title">PANGGILAN</div>
+                        <div class="font-black text-white mb-4 fluid-overlay-number">{{ lastCalled.full_number }}</div>
+                        <div class="text-white fluid-overlay-counter">KE {{ lastCalled.counter?.name }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Queue List -->
             <div class="w-1/3 bg-gray-800 border-l border-gray-700 flex flex-col">
-                <div class="p-4 bg-blue-900 text-center font-bold text-xl uppercase">Sedang Dilayani</div>
+                <div class="p-4 bg-blue-900 text-center font-bold uppercase fluid-section-title">Sedang Dilayani</div>
                 <div class="flex-1 overflow-hidden p-4 space-y-4">
                     <transition-group name="list" tag="div">
                         <div v-for="(q, index) in serving" :key="q.id" 
@@ -136,12 +136,12 @@ onMounted(() => {
                             :class="{'scale-105 border-l-8 border-green-500': index === 0, 'opacity-75': index > 0}"
                         >
                             <div class="text-left">
-                                <div class="text-xs text-gray-500 uppercase tracking-widest">{{ q.service?.name }}</div>
-                                <div class="text-5xl font-bold">{{ q.full_number }}</div>
+                                <div class="text-gray-500 uppercase tracking-widest fluid-label">{{ q.service?.name }}</div>
+                                <div class="font-bold fluid-queue-number">{{ q.full_number }}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-sm text-gray-500">Loket</div>
-                                <div class="text-3xl font-bold text-blue-600">{{ q.counter?.name ?? '-' }}</div>
+                                <div class="text-gray-500 fluid-label-sm">Loket</div>
+                                <div class="font-bold text-blue-600 fluid-counter">{{ q.counter?.name ?? '-' }}</div>
                             </div>
                         </div>
                     </transition-group>
@@ -159,6 +159,43 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* ===== FLUID TYPOGRAPHY WITH CLAMP ===== */
+/* Header */
+.fluid-header {
+    font-size: clamp(1.5rem, 2.5vw + 0.5rem, 2rem);
+}
+
+/* Section Title */
+.fluid-section-title {
+    font-size: clamp(1rem, 1.5vw + 0.25rem, 1.25rem);
+}
+
+/* Queue List Items */
+.fluid-label {
+    font-size: clamp(0.625rem, 0.9vw, 0.75rem);
+}
+.fluid-label-sm {
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+.fluid-queue-number {
+    font-size: clamp(2rem, 4vw + 0.5rem, 3.5rem);
+}
+.fluid-counter {
+    font-size: clamp(1.25rem, 2vw + 0.5rem, 2rem);
+}
+
+/* Overlay */
+.fluid-overlay-title {
+    font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+}
+.fluid-overlay-number {
+    font-size: clamp(5rem, 10vw + 2rem, 10rem);
+}
+.fluid-overlay-counter {
+    font-size: clamp(2rem, 4vw + 0.5rem, 3.5rem);
+}
+
+/* ===== ANIMATIONS ===== */
 .animate-marquee {
     animation: marquee 70s linear infinite;
 }

@@ -103,8 +103,8 @@ const formatDate = (date) => {
                     <span class="text-2xl">🖥️</span>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black text-white tracking-tight">{{ counter.name }}</h1>
-                    <p class="text-blue-400 text-xs font-bold uppercase tracking-widest">{{ counter.floor?.name }}</p>
+                    <h1 class="font-black text-white tracking-tight fluid-op-title">{{ counter.name }}</h1>
+                    <p class="text-blue-400 font-bold uppercase tracking-widest fluid-op-subtitle">{{ counter.floor?.name }}</p>
                 </div>
             </div>
             
@@ -158,7 +158,7 @@ const formatDate = (date) => {
                             </div>
                             
                             <!-- Queue Number - HUGE -->
-                            <div class="text-[10rem] leading-none font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-blue-100 to-blue-300 font-mono tracking-tighter mb-6 drop-shadow-2xl">
+                            <div class="leading-none font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-blue-100 to-blue-300 font-mono tracking-tighter mb-6 drop-shadow-2xl fluid-op-queue-number">
                                 {{ currentQueue.full_number }}
                             </div>
                             
@@ -285,5 +285,16 @@ const formatDate = (date) => {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+/* ===== FLUID TYPOGRAPHY WITH CLAMP ===== */
+.fluid-op-title {
+    font-size: clamp(1rem, 1.5vw + 0.25rem, 1.25rem);
+}
+.fluid-op-subtitle {
+    font-size: clamp(0.6rem, 0.8vw, 0.75rem);
+}
+.fluid-op-queue-number {
+    font-size: clamp(6rem, 12vw + 2rem, 10rem);
 }
 </style>

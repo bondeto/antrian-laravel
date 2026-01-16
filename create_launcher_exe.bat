@@ -8,7 +8,7 @@ echo [0/3] Stopping existing instances...
 taskkill /IM "AntrianLauncher.exe" /F >nul 2>&1
 
 echo [1/3] Building EXE with PyInstaller...
-python -m PyInstaller --noconsole --onefile --icon="app_icon.ico" --name "AntrianLauncher" antrian_launcher.py
+python -m PyInstaller --noconsole --onefile --icon="app_icon.ico" --add-data "app_icon.ico;." --add-data "app_icon.png;." --name "AntrianLauncher" antrian_launcher.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
