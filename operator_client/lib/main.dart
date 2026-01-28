@@ -463,10 +463,13 @@ class _OperatorPanelState extends State<OperatorPanel> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: isLoading ? null : callNext,
+                  onPressed: (isLoading || waitingCount == 0) ? null : callNext,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: waitingCount > 0
+                        ? Colors.blue
+                        : Colors.grey.shade300,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey.shade300,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: isLoading
@@ -478,7 +481,7 @@ class _OperatorPanelState extends State<OperatorPanel> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text("PANGGIL"),
+                      : Text(waitingCount > 0 ? "PANGGIL" : "ANTRIAN KOSONG"),
                 ),
               ),
             ],

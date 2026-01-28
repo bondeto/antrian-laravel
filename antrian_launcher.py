@@ -11,11 +11,27 @@ import sys
 import psutil 
 import time
 from PIL import Image, ImageDraw
+import ctypes
 
-# --- CONFIGURATION (SAFE MODE) ---
-LOG_UPDATE_INTERVAL_MS = 500   # Slower updates (2 FPS)
-MONITOR_INTERVAL_MS = 3000     # Slower monitoring
-MAX_LOG_CHARS_PER_TICK = 1000  # Strict limit on text insertion
+# --- SINGLE INSTANCE CHECK ---
+def check_single_instance():
+    mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "Global\\AntrianLauncherMutex")
+    if ctypes.windll.kernel32.GetLastError() == 183: # ERROR_ALREADY_EXISTS
+        return False
+    return mutex
+
+_instance_mutex = check_single_instance()
+if not _instance_mutex:
+    # Use a hidden tk window to show error
+    temp_root = tk.Tk()
+    temp_root.withdraw()
+    messagebox.showwarning("Warning", "Aplikasi Antrian Launcher sudah berjalan!")
+    sys.exit(0)
+
+# --- CONFIGURATION ---
+LOG_UPDATE_INTERVAL_MS = 500
+MONITOR_INTERVAL_MS = 3000
+MAX_LOG_CHARS_PER_TICK = 1000
 
 try:
     import pystray
@@ -42,7 +58,6 @@ class LogBuffer:
         with self.lock:
             if name not in self.buffers:
                 self.buffers[name] = ""
-            # Don't let buffer grow infinitely if UI hangs
             if len(self.buffers[name]) > 50000:
                 self.buffers[name] = self.buffers[name][-20000:]
             self.buffers[name] += text
@@ -69,16 +84,22 @@ class ServiceThread:
         self.stop_event.clear()
         threading.Thread(target=self._run_job, daemon=True).start()
 
-    def stop(self):
-        threading.Thread(target=self._stop_internal, daemon=True).start()
+    def stop(self, wait=False):
+        if wait:
+            self._stop_internal()
+        else:
+            threading.Thread(target=self._stop_internal, daemon=True).start()
 
     def _stop_internal(self):
         self.stop_event.set()
         if self.process:
             self.log_buffer.write(self.name, f"[{self.name}] Stopping...\n")
             try:
-                subprocess.call(['taskkill', '/F', '/T', '/PID', str(self.process.pid)], 
-                              creationflags=subprocess.CREATE_NO_WINDOW)
+                # Kill process tree recursively
+                parent = psutil.Process(self.process.pid)
+                for child in parent.children(recursive=True):
+                    child.kill()
+                parent.kill()
             except Exception: pass
             self.process = None
 
@@ -113,8 +134,6 @@ class ServiceThread:
                 if self.process.poll() is not None: break
                 
                 try: 
-                    # Blocking read with shortlines is usually fine
-                    # But if no output, it sits here. That's fine for a thread.
                     line = self.process.stdout.readline() 
                 except: break
                 
@@ -134,7 +153,7 @@ class ServiceThread:
 class AntrianLauncher:
     def __init__(self, root):
         self.root = root
-        self.root.title("Antrian Control Panel - Safe Mode")
+        self.root.title("Antrian Control Panel")
         self.root.geometry("1000x750")
         
         try:
@@ -145,7 +164,7 @@ class AntrianLauncher:
         self.log_buffer = LogBuffer()
         self.services = {} 
         self.queue = queue.Queue() 
-        self.local_ip = "127.0.0.1" # Defer heavy init
+        self.local_ip = "127.0.0.1"
         self.tray_icon = None
         self.is_quitting = False
         self.cwd = os.getcwd()
@@ -160,20 +179,15 @@ class AntrianLauncher:
         
         self.create_menu()
         self.init_ui()
-        
-        # Defer Everything Heavy
         self.root.after(100, self.lazy_init)
 
     def lazy_init(self):
-        """Perform initialization after window is drawn"""
         self.local_ip = self.get_safe_ip()
         self.lbl_ip.configure(text=f"Local IP: {self.local_ip}")
         self.update_link_buttons()
-        
-        # Start loops
         self.root.after(100, self.process_status_queue)
         self.root.after(1000, self.update_logs_ui)
-        self.root.after(3000, self.start_monitoring_threads) # Wait 3s before monitoring
+        self.root.after(3000, self.start_monitoring_threads)
         threading.Thread(target=self.run_dependency_check, daemon=True).start()
 
     def get_safe_ip(self):
@@ -195,7 +209,6 @@ class AntrianLauncher:
         file_menu.add_separator()
         file_menu.add_command(label="Hide to Tray", command=self.minimize_to_tray)
         file_menu.add_command(label="Exit", command=self.quit_app)
-        
         self.root.protocol("WM_DELETE_WINDOW", self.minimize_to_tray)
 
     def init_ui(self):
@@ -210,7 +223,8 @@ class AntrianLauncher:
         action_frame.pack(fill=tk.X)
         self.btn_start_all = ttk.Button(action_frame, text="▶ START ALL", command=self.start_all)
         self.btn_start_all.pack(side=tk.LEFT, padx=5)
-        ttk.Button(action_frame, text="⏹ STOP ALL", command=self.stop_all).pack(side=tk.LEFT, padx=5)
+        self.btn_stop_all = ttk.Button(action_frame, text="⏹ STOP ALL", command=self.stop_all, state="disabled")
+        self.btn_stop_all.pack(side=tk.LEFT, padx=5)
         
         ttk.Separator(action_frame, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=15, fill=tk.Y)
         
@@ -224,14 +238,12 @@ class AntrianLauncher:
         paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         self.service_widgets = {}
-        
         left_frame = ttk.LabelFrame(paned, text="Services", width=300)
         paned.add(left_frame, weight=0)
         
         self.log_pages = ttk.Notebook(paned)
         paned.add(self.log_pages, weight=1)
         
-        # All Logs
         all_f = ttk.Frame(self.log_pages)
         self.log_pages.add(all_f, text="All Logs")
         self.all_log_txt = scrolledtext.ScrolledText(all_f, state='disabled', font=("Consolas", 9))
@@ -240,10 +252,9 @@ class AntrianLauncher:
         for name, cmd in self.service_definitions:
             self.build_service_row(left_frame, name, cmd)
 
-        # Footer
         footer = ttk.Frame(self.root, relief="sunken")
         footer.pack(fill=tk.X, side=tk.BOTTOM)
-        self.lbl_res = ttk.Label(footer, text="System: Monitoring starting in 3s...", font=("Consolas", 9))
+        self.lbl_res = ttk.Label(footer, text="System: Ready", font=("Consolas", 9))
         self.lbl_res.pack(side=tk.LEFT, padx=5)
 
     def build_service_row(self, parent, name, cmd):
@@ -264,7 +275,6 @@ class AntrianLauncher:
         b_stop = ttk.Button(bot, text="Stop", width=6, state="disabled", command=lambda: self.services[name].stop())
         b_stop.pack(side=tk.LEFT)
 
-        # Tab
         tab = ttk.Frame(self.log_pages)
         self.log_pages.add(tab, text=name.split()[0])
         txt = scrolledtext.ScrolledText(tab, state='disabled', font=("Consolas", 9), bg="#222", fg="#ddd")
@@ -291,6 +301,7 @@ class AntrianLauncher:
                     w["lbl"].configure(foreground="green" if d else "gray")
                     w["start"].configure(state="disabled" if d else "normal")
                     w["stop"].configure(state="normal" if d else "disabled")
+                    self.update_global_buttons()
                     if n == "Laravel Server":
                         for k in self.qa_buttons: self.qa_buttons[k][0].configure(state="normal" if d else "disabled")
                 elif kind == "DOCKER":
@@ -302,32 +313,31 @@ class AntrianLauncher:
             except: break
         if not self.is_quitting: self.root.after(100, self.process_status_queue)
 
+    def update_global_buttons(self):
+        any_running = any(s.is_running for s in self.services.values())
+        all_running = all(s.is_running for s in self.services.values())
+        self.btn_start_all.configure(state="disabled" if all_running else "normal")
+        self.btn_stop_all.configure(state="normal" if any_running else "disabled")
+
     def update_logs_ui(self):
-        # 2 FPS update
         data = self.log_buffer.flush()
         if data:
             for name, text in data.items():
-                short_text = text[-MAX_LOG_CHARS_PER_TICK:] # Strict limit
-                
-                # Update specific tab
+                short_text = text[-MAX_LOG_CHARS_PER_TICK:]
                 if name != "System":
                     t = self.service_widgets[name]["txt"]
                     t.config(state='normal')
                     t.insert(tk.END, short_text)
                     t.see(tk.END)
                     t.config(state='disabled')
-                
-                # Update all
                 at = self.all_log_txt
                 at.config(state='normal')
                 at.insert(tk.END, f"[{name}] {short_text}")
                 at.see(tk.END)
                 at.config(state='disabled')
-        
         if not self.is_quitting: self.root.after(LOG_UPDATE_INTERVAL_MS, self.update_logs_ui)
 
     def start_all(self):
-        self.btn_start_all.configure(state="disabled")
         def step(names):
             if not names: return
             self.services[names[0]].start()
@@ -336,11 +346,9 @@ class AntrianLauncher:
 
     def stop_all(self):
         for s in self.services.values(): s.stop()
-        self.btn_start_all.configure(state="normal")
 
     def run_dependency_check(self):
-        # Simple non-blocking check
-        pass # Disabled to prevent any startup hangs
+        pass
 
     def start_monitoring_threads(self):
         threading.Thread(target=self._mon_dock, daemon=True).start()
@@ -364,7 +372,6 @@ class AntrianLauncher:
                 msg = f"CPU: {cpu}% | RAM: {round(mem.used/1024**3,1)} GB | Disk: {psutil.disk_usage('/').percent}%"
                 if not self.is_quitting: self.queue.put(("RES", msg, None))
             except: pass
-            # Sleep already happened in cpu_percent(interval=1)
 
     def minimize_to_tray(self):
         if not HAS_TRAY: self.quit_app(); return
@@ -381,12 +388,23 @@ class AntrianLauncher:
         self.root.after(0, self.root.deiconify)
 
     def quit_app(self, i=None, it=None):
+        if self.is_quitting: return
         self.is_quitting = True
+        try:
+            self.root.title("Antrian Launcher - Exiting...")
+            for s in self.service_widgets.values():
+                s["start"].configure(state="disabled")
+                s["stop"].configure(state="disabled")
+            self.btn_start_all.configure(state="disabled")
+            self.btn_stop_all.configure(state="disabled")
+            self.root.update()
+        except: pass
         try: 
             if self.tray_icon: self.tray_icon.stop()
         except: pass
-        self.stop_all()
-        self.root.quit()
+        for s in self.services.values(): 
+            s.stop(wait=True)
+        self.root.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()

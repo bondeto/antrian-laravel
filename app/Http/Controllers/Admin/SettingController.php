@@ -27,6 +27,7 @@ class SettingController extends Controller
                 // Ticket features
                 'ticket_mode' => Setting::get('ticket_mode', 'print'), // print, paperless
                 'enable_photo_capture' => Setting::get('enable_photo_capture', false),
+                'exe_url' => Setting::get('exe_url', ''),
             ]
         ]);
     }
@@ -46,6 +47,7 @@ class SettingController extends Controller
             // Ticket features
             'ticket_mode' => 'required|in:print,paperless',
             'enable_photo_capture' => 'boolean',
+            'exe_url' => 'nullable|string',
         ]);
 
         if ($request->hasFile('app_logo')) {
@@ -65,6 +67,7 @@ class SettingController extends Controller
         // Save ticket features
         Setting::set('ticket_mode', $data['ticket_mode']);
         Setting::set('enable_photo_capture', $data['enable_photo_capture'] ? '1' : '0', 'boolean');
+        Setting::set('exe_url', $data['exe_url'] ?? '');
 
         // Broadcast settings update to all monitors
         broadcast(new SettingsUpdated([

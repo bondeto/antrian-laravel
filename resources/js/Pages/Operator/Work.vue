@@ -216,18 +216,30 @@ const formatDate = (date) => {
                     <!-- Main Call Button -->
                     <button 
                         @click="callNext" 
-                        :disabled="isLoading"
-                        class="group relative bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 p-8 rounded-3xl shadow-2xl shadow-blue-500/30 text-white text-center transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                        :disabled="isLoading || liveStats.waiting === 0"
+                        class="group relative p-8 rounded-3xl shadow-2xl transition-all duration-300 active:scale-95 disabled:cursor-not-allowed overflow-hidden w-full"
+                        :class="[
+                            liveStats.waiting > 0 
+                                ? 'bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-blue-500/30' 
+                                : 'bg-slate-800 border border-white/10 text-slate-500 shadow-none opacity-80'
+                        ]"
                     >
-                        <!-- Animated Background -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                        <!-- Animated Background (only if has queue) -->
+                        <div v-if="liveStats.waiting > 0" class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                         
                         <div class="relative z-10">
-                            <div class="text-6xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                                {{ isLoading ? '⏳' : '📞' }}
-                            </div>
-                            <h2 class="text-2xl font-black tracking-tight mb-1">PANGGIL BERIKUTNYA</h2>
-                            <p class="text-blue-200 text-sm font-medium">Klik untuk memanggil antrian</p>
+                            <template v-if="liveStats.waiting > 0">
+                                <div class="text-6xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                                    {{ isLoading ? '⏳' : '📞' }}
+                                </div>
+                                <h2 class="text-2xl font-black tracking-tight mb-1">PANGGIL BERIKUTNYA</h2>
+                                <p class="text-blue-200 text-sm font-medium">Klik untuk memanggil antrian</p>
+                            </template>
+                            <template v-else>
+                                <div class="text-6xl mb-3 grayscale opacity-30">📭</div>
+                                <h2 class="text-2xl font-black tracking-tight mb-1">ANTRIAN KOSONG</h2>
+                                <p class="text-slate-500 text-sm font-medium">Tidak ada antrian menunggu di line ini</p>
+                            </template>
                         </div>
                     </button>
 

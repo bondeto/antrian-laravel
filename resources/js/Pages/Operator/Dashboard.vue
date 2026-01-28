@@ -149,6 +149,17 @@ onMounted(() => {
                 <Link href="/" class="inline-flex items-center gap-2 px-8 py-3 bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-sm hover:shadow-lg">
                     &larr; Kembali ke Beranda
                 </Link>
+                
+                <div v-if="$page.props.app_settings.exe_url" class="mt-6 flex justify-center">
+                    <a :href="$page.props.app_settings.exe_url" class="group relative flex items-center gap-3 px-6 py-4 bg-slate-900 border border-slate-800 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] transition-all hover:bg-black hover:scale-105 shadow-xl">
+                        <span class="text-xl">📥</span>
+                        <div class="text-left">
+                            <div class="leading-none mb-1">Download Client EXE</div>
+                            <div class="text-[8px] text-slate-500 font-bold">Aplikasi Desktop Operator</div>
+                        </div>
+                        <div class="absolute -top-2 -right-2 bg-blue-600 text-[8px] px-2 py-1 rounded-full animate-pulse">PC ONLY</div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

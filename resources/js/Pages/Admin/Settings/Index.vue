@@ -19,6 +19,7 @@ const form = useForm({
     // Ticket settings
     ticket_mode: props.settings.ticket_mode || 'print',
     enable_photo_capture: props.settings.enable_photo_capture || false,
+    exe_url: props.settings.exe_url || '',
     app_logo: null,
 });
 
@@ -237,6 +238,18 @@ const onLogoChange = (e) => {
                     <div v-if="form.enable_photo_capture" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 animate-fade-in">
                         <strong>📁 Penyimpanan Foto:</strong> Foto akan disimpan di folder <code class="bg-amber-100 px-1 rounded">storage/queue-photos/YYYY/MM/DD/</code> untuk memudahkan maintenance dan pembersihan data lama.
                     </div>
+                </div>
+
+                <!-- EXE Download URL -->
+                <div class="bg-white p-5 rounded-xl border border-slate-100 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">💻</div>
+                        <div>
+                            <div class="font-bold text-slate-800 uppercase text-xs tracking-wider">Aplikasi Desktop (EXE)</div>
+                            <p class="text-[10px] text-slate-500">Tautkan link download file .exe untuk operator</p>
+                        </div>
+                    </div>
+                    <input v-model="form.exe_url" type="text" class="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500 text-sm" placeholder="https://link-download-anda.com/operator-client.exe" />
                 </div>
             </div>
 

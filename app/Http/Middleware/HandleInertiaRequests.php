@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                 'logo_url' => \App\Models\Setting::get('app_logo') ? asset('storage/' . \App\Models\Setting::get('app_logo')) : null,
                 'header' => \App\Models\Setting::get('monitor_header', 'Pusat Antrian'),
                 'subheader' => \App\Models\Setting::get('monitor_subheader', 'Lobby Utama'),
+                'exe_url' => \App\Models\Setting::get('exe_url', ''),
             ]
         ];
     }
